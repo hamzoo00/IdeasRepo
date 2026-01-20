@@ -1,7 +1,10 @@
 import react from 'react';
+import Header from '../../components/Header';
 
 export default function StudentProfile() {
 
     
-    return <div>Studnt Profile Page</div>;
+    return (
+        <Header />
+    ) ;
 }

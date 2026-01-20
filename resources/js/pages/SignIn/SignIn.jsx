@@ -48,8 +48,9 @@ export default function SignIn() {
      console.log(response.data.message);
 
      const studentId = response.data.student.id;
+     const studentName = response.data.student.full_name;
      localStorage.setItem("student", JSON.stringify(response.data.student));
-     navigate(`/student/${studentId}`)
+     navigate(`/student/${studentName}/${studentId}`)
          
      } catch (error) {
       console.error("Login failed:", error);
@@ -172,7 +173,7 @@ export default function SignIn() {
               }}
             />
             
-
+          {/* Sign in */}
             <Button
               type="submit"
               fullWidth
@@ -191,7 +192,8 @@ export default function SignIn() {
             >
               {isSubmitting ? "Signing In..." : "Sign In"}
             </Button>
-
+            
+          {/* Sign in as teacher */}
            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
                 <Typography variant="body2" sx={{ color: Colors.mediumDark , marginRight: 0.5, }}>
                     Sign In as Teacher?
@@ -203,7 +205,8 @@ export default function SignIn() {
                     Sign In
                 </Link>
             </Box>
-           
+
+           {/* Sign Up */}
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
                 <Typography variant="body2" sx={{ color: Colors.mediumDark , marginRight: 0.5, }}>
                     Don't have an account?

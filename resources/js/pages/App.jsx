@@ -18,10 +18,10 @@ export default function App() {
             <Route path="/" element={<SignIn />} />
             <Route path="/teacherSignIn" element={<TeacherSignIn />} />
             <Route path="/signup" element={<SignUp />} />
-            <Route path="/student/:name/:id" element={<StudentProfile />} />
-            <Route path="/teacher/:id" element={<TeacherProfile />} />
+            <Route path="/:name/:id/profile" element={<StudentProfile />} />
+            <Route path="/:name/:id/profile" element={<TeacherProfile />} />
             <Route path="/admin/:id" element={<AdminProfile />} />
-            <Route path="/home" element={<Home />} />
+            <Route path="/:name/:id/home" element={<Home />} />
             <Route path="/contactUs" element={<ContactUs />} />
         </Routes>
     );

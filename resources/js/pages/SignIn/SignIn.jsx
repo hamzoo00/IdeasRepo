@@ -16,17 +16,16 @@ import { useNavigate } from "react-router-dom";
 
 
 const Colors = {
-  darkest:     "#03045E", 
-  darker:      "#023E8A",
-  dark:        "#0077B6",
-  mediumDark:  "#0096C7",
-  primary:     "#00B4D8", 
-  mediumLight: "#48CAE4",
-  light:       "#90E0EF",
-  lighter:     "#ADE8F4",
-  lightest:    "#CAF0F8", 
+  darkest:     "#03045E", // Brand authority: logos, main headings, navbar/footer
+  darker:      "#023E8A", // Primary UI actions: nav links, main buttons, active states
+  dark:        "#0077B6", // Interactive elements: hover states, secondary buttons, links
+  mediumDark:  "#0096C7", // Supporting UI: helper text, secondary links, icons
+  primary:     "#00B4D8", // Core action highlight: CTAs, input focus, active indicators
+  mediumLight: "#48CAE4", // Soft feedback: hover backgrounds, selected cards/rows
+  light:       "#90E0EF", // Section backgrounds: forms, tables, grouped content
+  lighter:     "#ADE8F4", // Layout support: sidebars, panels, app sections
+  lightest:    "#CAF0F8", // Global background: pages, auth screens
 };
-
 export default function SignIn() {
 
   const { 
@@ -50,7 +49,8 @@ export default function SignIn() {
      const studentId = response.data.student.id;
      const studentName = response.data.student.full_name;
      localStorage.setItem("student", JSON.stringify(response.data.student));
-     navigate(`/student/${studentName}/${studentId}`)
+     localStorage.setItem("auth_token", response.data.auth_token);
+     navigate(`/${studentName}/${studentId}/profile`)
          
      } catch (error) {
       console.error("Login failed:", error);

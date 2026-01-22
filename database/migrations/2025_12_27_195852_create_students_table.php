@@ -24,7 +24,8 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('whatsapp')->nullable();
             $table->text('interest')->nullable();
-                 
+            $table->text('bio')->nullable();
+            
             $table->string('image')->nullable();
             $table->string('password');
             $table->timestamps();

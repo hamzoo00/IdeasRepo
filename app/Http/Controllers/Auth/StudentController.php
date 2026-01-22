@@ -82,6 +82,8 @@ class StudentController extends Controller
                  'message' => 'Invalid credentials'
              ], 401);
          }
+
+         $token = $student->createToken('student-token')->plainTextToken; // Bearer type
     
          return response()->json([
              'message' => 'Login successful',
@@ -90,7 +92,8 @@ class StudentController extends Controller
                  'full_name' => $student->full_name,
                  'email' => $student->email,
                  'student_id' => $student->student_id
-             ]
+             ],
+             'auth_token' => $token,
          ], 200);
     }
 

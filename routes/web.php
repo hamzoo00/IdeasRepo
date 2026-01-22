@@ -16,4 +16,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('dashboard');
 });
 
+Route::get('/{any}', function () {
+    return view('app');
+})->where('any', '^(?!api).*$');
+
+
 require __DIR__.'/settings.php';

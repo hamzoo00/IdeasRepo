@@ -5,9 +5,9 @@ use App\Http\Controllers\Profile\ProfileController;
 use Illuminate\Http\Request;
 
 
-Route::get('/profile/{id}', [ProfileController::class, 'show']);
+Route::get('/profile/{id}', [ProfileController::class, 'showStudentProfile']);
 
 Route::middleware('auth:sanctum')->group(function () {
-    // Route::put('/profile/update', [ProfileController::class, 'update']);
+    Route::put('updateStudentProfile', [ProfileController::class, 'updateStudentProfile']);
 });
 

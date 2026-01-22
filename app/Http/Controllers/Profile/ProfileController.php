@@ -3,29 +3,26 @@
 namespace App\Http\Controllers\Profile;
 
 use Illuminate\Http\Request;
-use App\Models\Auth\Admin;
 use App\Models\Auth\Student;
-use App\Models\Auth\Teacher;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 
 class ProfileController extends Controller
 {
     
-        public function show($id)
+        public function showStudentProfile($id)
     {
         $profile = Student::where('id', $id)->firstOrFail();
 
         $viewer = auth('student')->user();
         $isOwner = $viewer && $viewer->id === $profile->id;
 
-   
-        // Build response depending on ownership
-        // if ($isOwner) {
-        //     // return full profile
+
             $data = [
                 'id' => $profile->id,
+                'student_id' => $profile->id,
+                'university_name' => $profile->university_name,
                 'full_name' => $profile->full_name,
                 'batch' => $profile->batch,
                 'degree' => $profile->degree,
@@ -36,21 +33,6 @@ class ProfileController extends Controller
                 'interest' => $profile->interest,
                 'image' => $profile->image,
             ];
-        // } else {
-        //     // return only public subset
-        //     $data = [
-        //         'id' => $profile->id,
-        //         'full_name' => $profile->full_name,
-        //         'batch' => $profile->batch,
-        //         'degree' => $profile->degree,
-        //         'semester' => $profile->semester,
-        //         'email' => $profile->email,
-        //         'whatsapp' => $profile->whatsapp,
-        //         'bio' => $profile->bio,
-        //         'interest' => $profile->interest,
-        //         'image' => $profile->image,
-        //     ];
-        // }
 
         return response()->json([
             'profile' => $data,
@@ -58,46 +40,62 @@ class ProfileController extends Controller
         ]);
     }
 
-    public function update(Request $request)
+   public function updateStudentProfile(Request $request)
     {
-        // Auth required by route middleware
-        $user = $request->user(); // same as auth()->user()
+       /** @var \App\Models\Auth\Student $student */
+        $student = auth('sanctum')->user();
 
-        // Validate allowed fields
-        $validated = $request->validate([
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Max 2MB
-            'full_name' => 'sometimes|string|max:255',
-            'bio'       => 'sometimes|string|max:1000',
-            'interest'  => 'sometimes|nullable|string',
-            'whatsapp'  => 'sometimes|nullable|string',
+       
+        $request->validate([
+            'full_name' => 'required|string|max:255',
             
+            // Validate email: must be unique in students table, but ignore the current student's ID
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                Rule::unique('students', 'email')->ignore($student->id),
+            ],
+            
+            'whatsapp' => 'nullable|string|max:20',
+            'interest' => 'nullable|string|max:1000',
+            'bio' => 'nullable|string|max:5000',
+            
+            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:5120', // Max 5MB
+        ], [
+           
+            'email.unique' => 'This email address is already registered by another student.',
+            'image.max' => 'The image size must not exceed 2MB.',
+            'image.mimes' => 'The image must be a file of type: jpeg, png, jpg.',
         ]);
 
-        // 2. Handle Image Upload
-       if ($request->hasFile('image')) {
-        
-        // A. Delete old image if it exists (Optional, keeps folder clean)
-        if ($user->image) {
-            Storage::disk('public')->delete($user->image);
+       
+       $dataToUpdate = [
+            'full_name' => $request->full_name,
+            'email'     => $request->email,
+            'whatsapp'  => $request->whatsapp,
+            'interest'  => strtoupper($request->interest),
+            'bio'       => $request->bio,
+       ];
+
+        // Handle Image Upload
+        if ($request->hasFile('image')) {
+       
+        if ($student->image && Storage::disk('public')->exists($student->image)) {
+            Storage::disk('public')->delete($student->image);
         }
-
-        // B. Store the new file
-        // This saves to: storage/app/public/profile_images/filename.jpg
-        // It returns the path: "profile_images/filename.jpg"
-        $path = $request->file('image')->store('profile_images', 'public');
-
-        // C. Update the user model with the path
-        $user->image = $path;
+       
+        $dataToUpdate['image'] = $request->file('image')->store('profile_images', 'public');
     }
 
-        $user->update($validated);
+        $student->update($dataToUpdate);
 
         return response()->json([
-            'message' => 'Profile updated',
-            'profile' => $user,
-            'image_url' => asset('storage/' . $user->image),
-        ]
-        );
+            'message' => 'Profile updated successfully',
+            'user' => $student->refresh(),
+            'image_url' => $student->image ? asset('storage/' . $student->image) : null
+        ], 200);
     }
+
 
 }

@@ -3,13 +3,11 @@ import Header from '../../components/Header';
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import api from '../../components/axios'
-import UpperProfileSection from '../../components/UpperProfileSection';
+import UpperProfileSection from '../../components/Student/UpperProfileSection';
 
 export default function StudentProfile() {
 
     const {id, name} = useParams();
-
-    console.log(id, " ", name);
 
     const [profile, setProfile] = useState(null);
     const [isOwner, setIsOwner] = useState(false);
@@ -23,7 +21,6 @@ export default function StudentProfile() {
              if (!mounted) return;
              setProfile(res.data.profile);
              setIsOwner(res.data.is_owner);
-             console.log(res.data.profile);
 
            } catch (err) {
              console.error(err);

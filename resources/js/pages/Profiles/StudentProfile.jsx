@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import api from '../../components/axios'
 import UpperProfileSection from '../../components/Student/UpperProfileSection';
+import PostIdea from '../../components/Student/PostIdea';
 
 export default function StudentProfile() {
 
@@ -34,10 +35,12 @@ export default function StudentProfile() {
        if (loading) return <div>Loading...</div>;
        if (!profile) return <div>Profile not found</div>;
 
-    return ( <>
+    return ( 
+    <>
             <Header id={id} name={name} />
             <UpperProfileSection profile={profile} isOwner={isOwner} />
-        </>
+           {isOwner && <PostIdea />}
+    </>
 
     ) ;
 }

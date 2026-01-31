@@ -31,7 +31,7 @@ class Student extends Authenticatable
    protected $hidden =['password'];
 
 
-   // This adds a fake attribute 'profile_url' to your JSON response
+   // This adds a fake attribute 'profile_url' to JSON response
       protected $appends = ['profile_url'];
       
       public function getProfileUrlAttribute()

@@ -51,7 +51,7 @@ export default function SignIn() {
 
      const adminId = response.data.admin.id;
      localStorage.setItem("admin", JSON.stringify(response.data.teacher));
-     navigate(`/admin/${adminId}`)
+     navigate(`/${adminId}/admin`)
          
      } else {
         
@@ -64,9 +64,10 @@ export default function SignIn() {
      console.log(response.data.message);
 
      const teacherId = response.data.teacher.id;
-      const teacherName = response.data.teacher.Name;
+      const teacherName = response.data.teacher.full_name;
      localStorage.setItem("Teacher", JSON.stringify(response.data.teacher));
-     navigate(`/${teacherName}/${teacherId}/profile`);
+     localStorage.setItem("auth_token", response.data.auth_token);
+     navigate(`/${teacherName}/${teacherId}/teacher/profile`);
          
      } } catch (error) {
       console.error("Login failed:", error);

@@ -19,8 +19,8 @@ export default function App() {
             <Route path="/teacherSignIn" element={<TeacherSignIn />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/:name/:id/profile" element={<StudentProfile />} />
-            <Route path="/:name/:id/profile" element={<TeacherProfile />} />
-            <Route path="/admin/:id" element={<AdminProfile />} />
+            <Route path="/:name/:id/teacher/profile" element={<TeacherProfile />} />
+            <Route path="/:id/admin/profile" element={<AdminProfile />} />
             <Route path="/:name/:id/home" element={<Home />} />
             <Route path="/contactUs" element={<ContactUs />} />
         </Routes>

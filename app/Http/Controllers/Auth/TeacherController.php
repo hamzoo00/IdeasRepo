@@ -31,7 +31,9 @@ class TeacherController extends Controller
                  'message' => 'Invalid credentials'
              ], 401);
          }
-    
+
+          $token = $teacher->createToken('teacher-token')->plainTextToken;
+
          return response()->json([
              'message' => 'Login successful',
              'teacher' => [
@@ -39,7 +41,8 @@ class TeacherController extends Controller
                  'email' => $teacher->email,
                  'full_name' => $teacher->full_name,
                  'employee_id' => $teacher->employee_id
-             ]
+             ],
+             'auth_token' => $token
          ], 200);
     }
 

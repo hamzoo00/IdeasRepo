@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 import {Link} from 'react-router'
 import api from '../../components/axios.js';
+import ErrorMessage from  '../../components/ErrorMessage.jsx';
 
 const Colors = {
   darkest:     "#03045E", // Brand authority: logos, main headings, navbar/footer
@@ -86,6 +87,9 @@ const DEGREES = {
 
 
 export default function SignUp() {
+ 
+ const {error, setError} = React.useState(null);
+ 
   const { 
     register, 
     handleSubmit,
@@ -126,12 +130,18 @@ const password = watch("password");
     reset();
 
   } catch (error) {
-    alert(error.response?.data);
+    setError(error.response?.data?.message || "An error occurred during registration.");
   }
 };
 
 
   return (
+    <>
+    <ErrorMessage 
+        error={error} 
+        clearError={() => setError(null)} 
+      />
+   
     <Box
       sx={{
         minHeight: '100vh',
@@ -488,5 +498,6 @@ const password = watch("password");
         </Paper>
       </Container>
     </Box>
+  </>
   );
 }

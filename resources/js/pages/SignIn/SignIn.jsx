@@ -12,6 +12,7 @@ import {
 import {Link} from 'react-router'
 import api from '../../components/axios'
 import { useNavigate } from "react-router-dom";
+import ErrorMessage from '../../components/ErrorMessage';
 
 
 
@@ -27,6 +28,8 @@ const Colors = {
   lightest:    "#CAF0F8", // Global background: pages, auth screens
 };
 export default function SignIn() {
+
+const [error, setError] = React.useState(null);
 
   const { 
     register, 
@@ -53,12 +56,18 @@ export default function SignIn() {
      navigate(`/${studentName}/${studentId}/profile`)
          
      } catch (error) {
-      console.error("Login failed:", error);
+       setError("Login failed. Please check your credentials and try again.\n" + error.message);
     }
     return new Promise((resolve) => setTimeout(resolve, 500));
   };
 
   return (
+<>
+    <ErrorMessage 
+        error={error} 
+        clearError={() => setError(null)} 
+      />
+    
     
     <Box
       sx={{
@@ -223,5 +232,6 @@ export default function SignIn() {
         </Paper>
       </Container>
     </Box>
+  </>
   );
 }

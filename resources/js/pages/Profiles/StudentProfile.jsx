@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import api from '../../components/axios'
 import UpperProfileSection from '../../components/Student/UpperProfileSection';
 import PostIdea from '../../components/Student/PostIdea';
+import ErrorMessage from  '../../components/ErrorMessage';
 
 export default function StudentProfile() {
 
@@ -13,6 +14,7 @@ export default function StudentProfile() {
     const [profile, setProfile] = useState(null);
     const [isOwner, setIsOwner] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
      useEffect(() => {
          let mounted = true;
@@ -24,7 +26,7 @@ export default function StudentProfile() {
              setIsOwner(res.data.is_owner);
 
            } catch (err) {
-             console.error(err);
+             setError("Failed to load profile. Please try again later.\n" + err.message);
            } finally {
              if (mounted) setLoading(false);
            }
@@ -40,6 +42,10 @@ export default function StudentProfile() {
             <Header id={id} name={name} />
             <UpperProfileSection profile={profile} isOwner={isOwner} />
            {isOwner && <PostIdea />}
+            <ErrorMessage 
+               error={error} 
+               clearError={() => setError(null)} 
+             />
     </>
 
     ) ;

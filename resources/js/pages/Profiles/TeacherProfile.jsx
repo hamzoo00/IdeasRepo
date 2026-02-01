@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import api from '../../components/axios'
 import UpperProfileSection from '../../components/Teacher/Profile/UpperProfileSection';
 import PostIdea from '../../components/Student/PostIdea';
+import ErrorMessage from  '../../components/ErrorMessage';
+import { set } from 'react-hook-form';
 
 
 export default function TeacherProfile() {
@@ -11,8 +13,9 @@ export default function TeacherProfile() {
     const {id, name} = useParams();
 
      const [profile, setProfile] = useState(null);
-    const [isOwner, setIsOwner] = useState(false);
-    const [loading, setLoading] = useState(true);
+     const [isOwner, setIsOwner] = useState(false);
+     const [loading, setLoading] = useState(true);
+     const [error, setError] = useState(null);
 
      useEffect(() => {
          let mounted = true;
@@ -24,7 +27,7 @@ export default function TeacherProfile() {
              setIsOwner(res.data.is_owner);
 
            } catch (err) {
-             console.error(err);
+             setError("Failed to load profile. Please try again later.\n" + err.message);
            } finally {
              if (mounted) setLoading(false);
            }
@@ -39,5 +42,9 @@ export default function TeacherProfile() {
         <Header id={id} name={name} />
         <UpperProfileSection profile={profile} isOwner={isOwner} />
         {isOwner && <PostIdea />}
+        <ErrorMessage 
+               error={error} 
+               clearError={() => setError(null)} 
+             />
     </>;
 }

@@ -12,6 +12,7 @@ import {
 import {Link} from 'react-router'
 import api from '../../components/axios'
 import { useNavigate } from "react-router-dom";
+import ErrorMessage from '../../components/ErrorMessage';
 
 
 
@@ -28,6 +29,8 @@ const Colors = {
 };
 
 export default function SignIn() {
+
+const [error, setError] = React.useState(null);
 
   const { 
     register, 
@@ -47,10 +50,8 @@ export default function SignIn() {
           }; 
           
      const response = await api.post('/admin/login', payload );
-     console.log(response.data.message);
-
      const adminId = response.data.admin.id;
-     localStorage.setItem("admin", JSON.stringify(response.data.teacher));
+     localStorage.setItem("admin", JSON.stringify(response.data.admin));
      navigate(`/${adminId}/admin`)
          
      } else {
@@ -61,7 +62,6 @@ export default function SignIn() {
           }; 
           
      const response = await api.post('/teacher/login', payload );
-     console.log(response.data.message);
 
      const teacherId = response.data.teacher.id;
       const teacherName = response.data.teacher.full_name;
@@ -70,13 +70,18 @@ export default function SignIn() {
      navigate(`/${teacherName}/${teacherId}/teacher/profile`);
          
      } } catch (error) {
-      console.error("Login failed:", error);
+      setError("Login failed. Please check your credentials and try again.\n" + error.message);
     }
   };
     
   
 
   return (
+     <>
+    <ErrorMessage 
+        error={error} 
+        clearError={() => setError(null)} 
+      />
     
     <Box
       sx={{
@@ -238,5 +243,6 @@ export default function SignIn() {
         </Paper>
       </Container>
     </Box>
+   </> 
   );
 }

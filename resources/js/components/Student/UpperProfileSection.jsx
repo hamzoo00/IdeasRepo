@@ -30,6 +30,7 @@ import {
   KeyboardArrowUp,
 } from "@mui/icons-material";
 import api from "../axios"; 
+import ErrorMessage from "../ErrorMessage";
 
 const Colors = {
   darkest: "#03045E",
@@ -49,6 +50,7 @@ const parseInterests = (interestString) => {
 };
 
 export default function UpperProfileSection({ profile, isOwner }) {
+
   const [isEditing, setIsEditing] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
   const [serverError, setServerError] = useState("");
@@ -286,9 +288,9 @@ export default function UpperProfileSection({ profile, isOwner }) {
             {/* DIVIDER 1 */}
             <Divider sx={{ my: 4, borderColor: Colors.lighter }} />
 
-            {/* ========================================================= */}
+            
             {/* SECTION 2: Academic & Contact Info */}
-            {/* ========================================================= */}
+            
             <Box>
                 <Typography variant="h6" sx={{ color: Colors.darkest, mb: 2, fontWeight: 600 }}>
                   Academic & Contact Info

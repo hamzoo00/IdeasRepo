@@ -26,6 +26,7 @@ class Student extends Authenticatable
         'image',
         'password',
         'bio',
+        'is_suspended'
     ];
 
    protected $hidden =['password'];

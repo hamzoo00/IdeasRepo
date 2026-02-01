@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import api from '../../components/axios'
 import UpperProfileSection from '../../components/Student/UpperProfileSection';
-import PostIdea from '../../components/Student/PostIdea';
+import PostIdea from '../../components/PostIdea';
 import ErrorMessage from  '../../components/ErrorMessage';
 
 export default function StudentProfile() {
@@ -41,7 +41,7 @@ export default function StudentProfile() {
     <>
             <Header id={id} name={name} />
             <UpperProfileSection profile={profile} isOwner={isOwner} />
-           {isOwner && <PostIdea />}
+           {isOwner && <PostIdea author={'student'} />}
             <ErrorMessage 
                error={error} 
                clearError={() => setError(null)} 

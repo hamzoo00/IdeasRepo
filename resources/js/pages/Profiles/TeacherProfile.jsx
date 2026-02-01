@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import api from '../../components/axios'
 import UpperProfileSection from '../../components/Teacher/Profile/UpperProfileSection';
-import PostIdea from '../../components/Student/PostIdea';
+import PostIdea from '../../components/PostIdea';
 import ErrorMessage from  '../../components/ErrorMessage';
 import { set } from 'react-hook-form';
 
@@ -41,7 +41,7 @@ export default function TeacherProfile() {
     return <>
         <Header id={id} name={name} />
         <UpperProfileSection profile={profile} isOwner={isOwner} />
-        {isOwner && <PostIdea />}
+        {isOwner && <PostIdea author={'teacher'}/>}
         <ErrorMessage 
                error={error} 
                clearError={() => setError(null)} 

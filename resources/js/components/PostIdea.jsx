@@ -41,7 +41,8 @@ const Colors = {
   errorBorder: "#FFCDD2"
 };
 
-export default function PostIdea({ author = "student" }) { 
+export default function PostIdea() { 
+
   const [open, setOpen] = useState(false);
   const [previewState, setPreviewState] = useState("idle"); 
   const [apiError, setApiError] = useState(null);
@@ -87,16 +88,45 @@ export default function PostIdea({ author = "student" }) {
   };
 
   const normalizeTag = (input) => {
-    let clean = input.replace(/\s+/g, '');
-    if (clean && !clean.startsWith('#')) {
+
+    let clean = input.replaceAll(/\s+/g, '').trim();
+    
+    if (!clean.startsWith('#')) {
       clean = '#' + clean;
     }
-    return clean;
+
+    let text = clean.substring(1); 
+
+    if (text.length === 1) {
+        return '#' + text.toUpperCase();
+    }
+
+    if (text.length > 1) {
+       const first = text[0];
+       const second = text[1];
+
+       // Helper: Check if character is a letter/number and uppercase/lowercase
+       const isUpper = (char) => char.toUpperCase() !== char.toLowerCase() && char === char.toUpperCase();
+       const isLower = (char) => char.toUpperCase() !== char.toLowerCase() && char === char.toLowerCase();
+ 
+    if (isUpper(first) && isUpper(second)) {
+           text = first + text.slice(1).toLowerCase();
+       }
+       
+    else if (isLower(first) && isLower(second)) {
+           text = first.toUpperCase() + text.slice(1); 
+       }
+    }
+
+    return '#' + text;
   };
+
+// Helper to check validity for styling
+  const isValidTag = (tag) => /^#[a-zA-Z0-9]+$/.test(tag);
 
   const onSubmit = async (data) => {
     try {
-      const endpoint = `/${author}/post-idea`;
+      const endpoint = `/post-idea`;
       const payload = { ...data, is_embargo: isEmbargo };
       await api.post(endpoint, payload);
       alert("Idea posted successfully!"); 
@@ -111,8 +141,7 @@ export default function PostIdea({ author = "student" }) {
     return str.trim().split(/\s+/).length;
   };
 
-  // Helper to check validity for styling
-  const isValidTag = (tag) => /^#[a-zA-Z0-9]+$/.test(tag);
+  
 
   return (
     <>

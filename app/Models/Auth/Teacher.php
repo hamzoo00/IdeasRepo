@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\Profile\TeacherProfile;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
+use App\Models\Ideas\Ideas;
 
 class Teacher extends Authenticatable
 {
@@ -25,6 +26,11 @@ class Teacher extends Authenticatable
     public function profile()
     {
         return $this->hasOne(TeacherProfile::class);
+    }
+
+    public function ideas()
+   {
+    return $this->morphMany(Ideas::class, 'author');
     }
 
 }

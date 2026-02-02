@@ -13,6 +13,19 @@ return new class extends Migration
     {
         Schema::create('ideas', function (Blueprint $table) {
             $table->id();
+            $table->morphs('author');
+        
+            $table->string('title');
+            $table->string('summary', 300);
+        
+            $table->text('description')->nullable();
+            $table->string('tech_stack')->nullable();
+            
+            $table->string('status')->default('Ongoing');
+            $table->boolean('is_embargo')->default(false);
+             $table->boolean('is_edited')->default(false);
+             
+            $table->softDeletes();
             $table->timestamps();
         });
     }

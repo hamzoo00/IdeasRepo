@@ -41,7 +41,7 @@ export default function StudentProfile() {
     <>
             <Header id={id} name={name} />
             <UpperProfileSection profile={profile} isOwner={isOwner} />
-           {isOwner && <PostIdea author={'student'} />}
+           {isOwner && <PostIdea />}
             <ErrorMessage 
                error={error} 
                clearError={() => setError(null)} 

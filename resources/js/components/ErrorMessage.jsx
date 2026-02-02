@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { Snackbar, Alert, Slide } from '@mui/material';
 
 /**
- * Reusable Error Message Component
- * @param {string|null} error - The error message to display.
- * @param {function} clearError - (Optional) Function to clear the error in parent state.
+ Reusable Error Message Component
+  @param {string|null} error - The error message to display.
+  @param {function} clearError - (Optional) Function to clear the error in parent state.
  */
 const ErrorMessage = ({ error, clearError }) => {
   const [open, setOpen] = useState(false);

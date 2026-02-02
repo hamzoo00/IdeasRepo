@@ -5,6 +5,7 @@ namespace App\Models\Auth;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
+use App\Models\Ideas\Ideas;
 
 class Student extends Authenticatable
 {
@@ -41,6 +42,13 @@ class Student extends Authenticatable
               ? asset('storage/' . $this->image)
               : null;
       }
+
+      public function ideas()
+     {
+          return $this->morphMany(Ideas::class, 'author');
+     }
+
+      
 }
 
 

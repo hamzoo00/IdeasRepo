@@ -1,5 +1,5 @@
-import React from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm,  } from 'react-hook-form';
+import {useState} from 'react';
 import { 
   TextField, 
   Button, 
@@ -14,6 +14,7 @@ import {
 import {Link} from 'react-router'
 import api from '../../components/axios.js';
 import ErrorMessage from  '../../components/ErrorMessage.jsx';
+import { useNavigate, } from "react-router-dom";
 
 const Colors = {
   darkest:     "#03045E", // Brand authority: logos, main headings, navbar/footer
@@ -88,7 +89,8 @@ const DEGREES = {
 
 export default function SignUp() {
  
- const {error, setError} = React.useState(null);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
  
   const { 
     register, 
@@ -127,6 +129,7 @@ const password = watch("password");
 
     const response = await api.post("/register", payload);
     alert(response.data.message);
+    navigate('/');
     reset();
 
   } catch (error) {

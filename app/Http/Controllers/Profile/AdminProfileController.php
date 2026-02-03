@@ -80,7 +80,7 @@ class AdminProfileController extends Controller
             $currentProfile = $admin->profile;
     
             if ($currentProfile && $currentProfile->image) {
-                if (Storage::disk('public')->exists($currentProfile->image)) {
+                if(Storage::disk('public')->exists($currentProfile->image)) {
                     Storage::disk('public')->delete($currentProfile->image);
                 }
             }

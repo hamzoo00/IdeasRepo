@@ -23,7 +23,6 @@ export default function AdminProfile() {
              if (!mounted) return;
              setProfile(res.data.profile);
              setIsOwner(res.data.is_owner);
-             console.log(res.data.is_owner);
 
            } catch (err) {
              setError("Failed to load profile. Please try again later.\n" + err.message);
@@ -39,7 +38,7 @@ export default function AdminProfile() {
 
     
     return <>
-           <Header />
+           <Header id={id} name={profile?.name} profileImage={profile?.image} />
            <UpperProfileSection profile={profile} isOwner={isOwner} />
 
             <ErrorMessage 

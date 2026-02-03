@@ -37,6 +37,7 @@ class AdminController extends Controller
                  'id' => $admin->id,
                  'login_code' => $admin->login_code,
                  'full_name' => $admin->full_name,
+                 'email' => $admin->email,
                  'employee_id' => $admin->employee_id
              ],
              'auth_token' => $token

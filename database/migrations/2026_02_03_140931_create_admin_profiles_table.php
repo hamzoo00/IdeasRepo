@@ -18,7 +18,7 @@ return new class extends Migration
                     ->cascadeOnDelete();
 
             $table->string('office')->nullable();
-            $table->string('office_hours')->nullable();    
+            $table->string('office_hours')->nullable();
             $table->string('profession')->nullable();
             $table->text('bio')->nullable();
             $table->string('whatsapp')->nullable();

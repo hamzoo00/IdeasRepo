@@ -13,6 +13,7 @@ import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import AdbIcon from '@mui/icons-material/Adb';
 import { Link } from 'react-router';
+import { useState, useEffect } from 'react';
 
 
 const Colors = {
@@ -28,9 +29,21 @@ const Colors = {
 };
 
 
-export default function Header({id, name}) {
+export default function Header({id, name, profileImage}) {
 
-    
+    const [imagePreview, setImagePreview] = useState(null);
+
+    useEffect(() => {
+        if (profileImage) {
+         const url = profileImage.startsWith('http') 
+            ? profileImage 
+            : `http://ideasrepo.test/storage/${profileImage}`;
+         setImagePreview(url);
+      } else {
+         setImagePreview(null);
+      }
+    }, [profileImage]);
+      
     
     const pages = [
        { label: "Contact Us", path: "/contactUs" },
@@ -175,7 +188,7 @@ export default function Header({id, name}) {
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
 
            {/* Profile image */}
-                <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
+                <Avatar alt="UserImage" src={imagePreview} />
               </IconButton>
             </Tooltip>
 

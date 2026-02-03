@@ -58,7 +58,7 @@ class IdeasController extends Controller
     
 
     
-}
+    }
 
 
 
@@ -127,15 +127,60 @@ class IdeasController extends Controller
         ]);
     }
 
-    
-    public function deleteUserIdea($id)
+    public function myTrashIdeas(Request $request)
     {
-        $user = Auth::user();
-        /** @var \App\Models\Student|\App\Models\Teacher $user */
-        $idea = $user->ideas()->findOrFail($id);
-        $idea->delete();
         
-        return response()->json(['message' => 'Idea deleted successfully']);
+        $user = Auth::user();
+
+        /** @var \App\Models\Student|\App\Models\Teacher $user */
+        $query = $user->ideas()->with(['tags', 'author']);
+
+        if ($request->query('view') === 'trash') {
+            $query->onlyTrashed();
+        }
+
+        return response()->json($query->latest()->get());
     }
 
+    public function restoreTrashedIdea($id)
+    {
+        $user = Auth::user();
+        
+        /** @var \App\Models\Student|\App\Models\Teacher $user */
+        $idea = $user->ideas()->onlyTrashed()->findOrFail($id);
+        
+        $idea->restore();
+
+        return response()->json(['message' => 'Idea restored successfully']);
+    }
+
+    
+  public function deleteUserIdea($id)
+    {
+        $user = Auth::user();
+        
+        // 1. Find the idea, even if it is already in the trash
+        // "withTrashed()" is the magic fix here!
+        /** @var \App\Models\Student|\App\Models\Teacher $user */
+        $idea = $user->ideas()->withTrashed()->findOrFail($id);
+
+        if ($idea->trashed()) {
+            // SCENARIO A: It is already in the trash -> DELETE FOREVER
+            $idea->forceDelete();
+            $message = 'Idea permanently deleted.';
+        } else {
+            // SCENARIO B: It is active -> SOFT DELETE (Move to trash)
+            $idea->delete();
+            $message = 'Idea moved to trash.';
+        }
+        
+        return response()->json(['message' => $message]);
+    }
+
+    public function trashCount()
+    {
+        /** @var \App\Models\Student|\App\Models\Teacher $user */
+        $count = Auth::user()->ideas()->onlyTrashed()->count();
+        return response()->json(['count' => $count]);
+    }
 }

@@ -35,10 +35,13 @@ import {
   Code as CodeIcon,
   Flag as FlagIcon,
   Edit as EditIcon,
-  Delete as DeleteIcon
+  Delete as DeleteIcon,
+  RestoreFromTrash as RestoreIcon,       
+  DeleteForever as DeleteForeverIcon    
 } from '@mui/icons-material';
 import { formatDistanceToNow } from 'date-fns';
 import api from './axios';
+
 
 
 const Colors = {
@@ -53,12 +56,12 @@ const Colors = {
   lightest: "#CAF0F8",
 };
 
-export default function IdeaCard({ idea, isOwner, refreshIdeas }) {
+export default function IdeaCard({ idea, isOwner, refreshIdeas, isTrashMode }) {
   const [expanded, setExpanded] = useState(false);
   const [editing, setEditing] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   
-  // Preview Flow State: 'idle' | 'searching' | 'ready'
+  // Preview Flow State
   const [previewState, setPreviewState] = useState('idle');
 
   // Report Dialog State
@@ -75,29 +78,22 @@ export default function IdeaCard({ idea, isOwner, refreshIdeas }) {
     tags: idea.tags ? idea.tags.map(t => t.name) : []
   });
 
-  // --- Logic: Get User Image & Name ---
+  //Get User Image & Name 
   const authorName = idea.author?.full_name || idea.author?.name || "Unknown User";
   
-  // specific logic to handle profile image path
   const getProfileImage = () => {
       const imgPath = idea.author?.image;
       if (!imgPath) return null;
-      return imgPath.startsWith('http') 
-          ? imgPath 
-          : `http://ideasrepo.test/storage/${imgPath}`;
+      return imgPath.startsWith('http') ? imgPath : `http://ideasrepo.test/storage/${imgPath}`;
   };
 
-  // --- Logic: Normalize Tags ---
+  // Normalize Tags 
   const normalizeTag = (input) => {
     let clean = input.replaceAll(/\s+/g, '').trim();
     if (!clean) return "";
-
-    if (!clean.startsWith('#')) {
-      clean = '#' + clean;
-    }
-
+    if (!clean.startsWith('#')) clean = '#' + clean;
+    
     let text = clean.substring(1);
-
     if (text.length === 1) return '#' + text.toUpperCase();
 
     if (text.length > 1) {
@@ -106,21 +102,22 @@ export default function IdeaCard({ idea, isOwner, refreshIdeas }) {
        const isUpper = (char) => char.toUpperCase() !== char.toLowerCase() && char === char.toUpperCase();
        const isLower = (char) => char.toUpperCase() !== char.toLowerCase() && char === char.toLowerCase();
 
-       if (isUpper(first) && isUpper(second)) {
-           text = first + text.slice(1).toLowerCase();
-       } else if (isLower(first) && isLower(second)) {
-           text = first.toUpperCase() + text.slice(1);
-       }
+       if (isUpper(first) && isUpper(second)) text = first + text.slice(1).toLowerCase();
+       else if (isLower(first) && isLower(second)) text = first.toUpperCase() + text.slice(1);
     }
     return '#' + text;
   };
 
-  // --- Handlers ---
+  // Handlers 
   const handleMenuOpen = (event) => setAnchorEl(event.currentTarget);
   const handleMenuClose = () => setAnchorEl(null);
 
   const handleDelete = async () => {
-    if (window.confirm("Are you sure you want to delete this idea?")) {
+    const message = isTrashMode 
+        ? "This will PERMANENTLY delete this idea. It cannot be recovered. Continue?" 
+        : "Are you sure you want to delete this idea?";
+
+    if (window.confirm(message)) {
         try {
             await api.delete(`/ideas/${idea.id}`);
             if (refreshIdeas) refreshIdeas();
@@ -131,24 +128,28 @@ export default function IdeaCard({ idea, isOwner, refreshIdeas }) {
     handleMenuClose();
   };
 
-  // 1. Preview Handler (Simulate Check)
-  const handlePreviewClick = () => {
-      setPreviewState('searching');
-      
-      // Simulate API delay for similarity check
-      setTimeout(() => {
-          // If check passes:
-          setPreviewState('ready');
-          // alert("No match found! You can now update.");
-      }, 1500);
+  const handleRestore = async () => {
+    if (window.confirm("Restore this idea back to your posts?")) {
+        try {
+            await api.put(`/ideas/${idea.id}/restore`);
+            if (refreshIdeas) refreshIdeas();
+        } catch (error) {
+            console.error("Restore failed", error);
+        }
+    }
+    handleMenuClose();
   };
 
-  // 2. Final Update Handler
+  const handlePreviewClick = () => {
+      setPreviewState('searching');
+      setTimeout(() => setPreviewState('ready'), 1500);
+  };
+
   const handleUpdate = async () => {
     try {
         await api.put(`/ideas/${idea.id}`, editData);
         setEditing(false);
-        setPreviewState('idle'); // Reset state
+        setPreviewState('idle');
         if (refreshIdeas) refreshIdeas();
     } catch (error) {
         console.error("Update failed", error);
@@ -158,10 +159,44 @@ export default function IdeaCard({ idea, isOwner, refreshIdeas }) {
 
   const handleCancelEdit = () => {
       setEditing(false);
-      setPreviewState('idle'); // Reset on cancel
+      setPreviewState('idle');
+  };
+  
+
+  const renderMenuItems = () => {
+    // 1. Visitor View (Not Owner)
+    if (!isOwner) {
+      return (
+        <MenuItem onClick={() => { setReportOpen(true); handleMenuClose(); }} sx={{ gap: 1 }}>
+            <FlagIcon fontSize="small" /> Report
+        </MenuItem>
+      );
+    }
+
+    // 2. Owner - Trash Mode (Restore / Delete Forever)
+    if (isTrashMode) {
+      return [
+        <MenuItem key="restore" onClick={handleRestore} sx={{ gap: 1, color: 'success.main' }}>
+            <RestoreIcon fontSize="small" /> Restore
+        </MenuItem>,
+        <MenuItem key="delete" onClick={handleDelete} sx={{ color: 'error.main', gap: 1 }}>
+            <DeleteForeverIcon fontSize="small" /> Delete Forever
+        </MenuItem>
+      ];
+    }
+
+    // 3. Owner - Normal Mode (Edit / Soft Delete)
+    return [
+      <MenuItem key="edit" onClick={() => { setEditing(true); handleMenuClose(); }} sx={{ gap: 1 }}>
+          <EditIcon fontSize="small" /> Edit
+      </MenuItem>,
+      <MenuItem key="delete" onClick={handleDelete} sx={{ color: 'error.main', gap: 1 }}>
+          <DeleteIcon fontSize="small" /> Delete
+      </MenuItem>
+    ];
   };
 
-  // --- RENDER: Edit Mode ---
+  //RENDER: Edit Mode
   if (editing) {
     return (
       <Card sx={{ mb: 3, borderRadius: 4, boxShadow: "0px 4px 20px rgba(0,0,0,0.1)", overflow: 'visible' }}>
@@ -171,12 +206,7 @@ export default function IdeaCard({ idea, isOwner, refreshIdeas }) {
         
         <CardContent sx={{ p: 3 }}>
             <Stack spacing={3}>
-                <TextField 
-                    fullWidth label="Title" variant="outlined" 
-                    value={editData.title} 
-                    onChange={(e) => setEditData({...editData, title: e.target.value})} 
-                />
-                
+                <TextField fullWidth label="Title" value={editData.title} onChange={(e) => setEditData({...editData, title: e.target.value})} />
                 <Autocomplete
                     multiple freeSolo
                     options={[]}
@@ -186,80 +216,35 @@ export default function IdeaCard({ idea, isOwner, refreshIdeas }) {
                         setEditData({ ...editData, tags: [...new Set(cleanTags)] });
                     }}
                     renderTags={(value, getTagProps) =>
-                        value.map((option, index) => {
-                            const { key, ...tagProps } = getTagProps({ index });
-                            return <Chip key={key} label={option} {...tagProps} size="small" sx={{ bgcolor: Colors.lightest, color: Colors.darker }} />;
-                        })
+                        value.map((option, index) => (
+                            <Chip key={index} label={option} {...getTagProps({ index })} size="small" sx={{ bgcolor: Colors.lightest, color: Colors.darker }} />
+                        ))
                     }
-                    renderInput={(params) => (
-                        <TextField {...params} label="Tags" placeholder="Add tag..." />
-                    )}
+                    renderInput={(params) => <TextField {...params} label="Tags" placeholder="Add tag..." />}
                 />
-
-                <TextField 
-                    fullWidth multiline rows={2} label="Summary" 
-                    value={editData.summary} 
-                    onChange={(e) => setEditData({...editData, summary: e.target.value})} 
-                />
-                
-                <TextField 
-                    fullWidth multiline rows={4} label="Detailed Description" 
-                    value={editData.description} 
-                    onChange={(e) => setEditData({...editData, description: e.target.value})} 
-                />
-                
-                <TextField 
-                    fullWidth label="Tech Stack" 
-                    value={editData.tech_stack} 
-                    onChange={(e) => setEditData({...editData, tech_stack: e.target.value})} 
-                />
+                <TextField fullWidth multiline rows={2} label="Summary" value={editData.summary} onChange={(e) => setEditData({...editData, summary: e.target.value})} />
+                <TextField fullWidth multiline rows={4} label="Detailed Description" value={editData.description} onChange={(e) => setEditData({...editData, description: e.target.value})} />
+                <TextField fullWidth label="Tech Stack" value={editData.tech_stack} onChange={(e) => setEditData({...editData, tech_stack: e.target.value})} />
             </Stack>
         </CardContent>
 
-        {/* Action Bar (Matches your specific request) */}
         <Box sx={{ p: 3, borderTop: `1px solid ${Colors.lighter}`, bgcolor: Colors.lightest, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-             <Button onClick={handleCancelEdit} sx={{ color: Colors.dark, fontWeight: 600 }}>
-                 Cancel
-             </Button>
-
+             <Button onClick={handleCancelEdit} sx={{ color: Colors.dark, fontWeight: 600 }}>Cancel</Button>
              {previewState === "idle" && (
-                 <Button
-                     variant="contained"
-                     onClick={handlePreviewClick}
-                     startIcon={<PreviewIcon />}
-                     sx={{ bgcolor: Colors.primary, "&:hover": { bgcolor: Colors.darker }, px: 3 }}
-                 >
-                     Preview Changes
-                 </Button>
+                 <Button variant="contained" onClick={handlePreviewClick} startIcon={<PreviewIcon />} sx={{ bgcolor: Colors.primary, "&:hover": { bgcolor: Colors.darker }, px: 3 }}>Preview Changes</Button>
              )}
-
              {previewState === "searching" && (
-                 <Button
-                     variant="contained"
-                     disabled
-                     startIcon={<CircularProgress size={20} color="inherit" />}
-                     sx={{ bgcolor: Colors.mediumDark, px: 3 }}
-                 >
-                     Checking...
-                 </Button>
+                 <Button variant="contained" disabled startIcon={<CircularProgress size={20} color="inherit" />} sx={{ bgcolor: Colors.mediumDark, px: 3 }}>Checking...</Button>
              )}
-
              {previewState === "ready" && (
-                 <Button
-                     variant="contained"
-                     onClick={handleUpdate}
-                     startIcon={<UploadIcon />}
-                     sx={{ bgcolor: Colors.darker, "&:hover": { bgcolor: Colors.darkest }, px: 3 }}
-                 >
-                     Update Idea
-                 </Button>
+                 <Button variant="contained" onClick={handleUpdate} startIcon={<UploadIcon />} sx={{ bgcolor: Colors.darker, "&:hover": { bgcolor: Colors.darkest }, px: 3 }}>Update Idea</Button>
              )}
         </Box>
       </Card>
     );
   }
 
-  // --- RENDER: Normal View ---
+  //RENDER: Normal View
   return (
     <>
       <Card 
@@ -272,16 +257,10 @@ export default function IdeaCard({ idea, isOwner, refreshIdeas }) {
             "&:hover": { boxShadow: "0px 8px 25px rgba(0, 180, 216, 0.2)" } 
         }}
       >
-        {/* TOP: Header */}
         <CardHeader
           sx={{ pb: 1 }}
           avatar={
-            <Avatar 
-                src={getProfileImage()} 
-                alt={authorName}
-                sx={{ bgcolor: Colors.primary, width: 48, height: 48, border: `2px solid ${Colors.lighter}` }}
-            >
-              {/* Fallback to first letter if no image */}
+            <Avatar src={getProfileImage()} alt={authorName} sx={{ bgcolor: Colors.primary, width: 48, height: 48, border: `2px solid ${Colors.lighter}` }}>
               {!getProfileImage() && authorName.charAt(0).toUpperCase()}
             </Avatar>
           }
@@ -290,11 +269,7 @@ export default function IdeaCard({ idea, isOwner, refreshIdeas }) {
               <MoreVertIcon color="action" />
             </IconButton>
           }
-          title={
-            <Typography variant="subtitle1" fontWeight="bold" color={Colors.darkest}>
-                {authorName}
-            </Typography>
-          }
+          title={<Typography variant="subtitle1" fontWeight="bold" color={Colors.darkest}>{authorName}</Typography>}
           subheader={
             <Typography variant="caption" color="text.secondary">
               {formatDistanceToNow(new Date(idea.created_at), { addSuffix: true })}
@@ -303,97 +278,53 @@ export default function IdeaCard({ idea, isOwner, refreshIdeas }) {
           }
         />
 
-        {/* MIDDLE: Content */}
         <CardContent sx={{ pt: 1, pb: 1 }}>
           <Box onClick={() => setExpanded(!expanded)} sx={{ cursor: 'pointer' }}>
-              <Typography variant="h6" fontWeight="bold" sx={{ color: Colors.darker, mb: 1 }}>
-                {idea.title}
-              </Typography>
-              
+              <Typography variant="h6" fontWeight="bold" sx={{ color: Colors.darker, mb: 1 }}>{idea.title}</Typography>
               <Box sx={{ mb: 2 }}>
                 {idea.tags && idea.tags.map((tag) => (
-                   <Chip 
-                        key={tag.id} 
-                        label={tag.name} 
-                        size="small" 
-                        sx={{ mr: 0.5, mb: 0.5, bgcolor: Colors.lightest, color: Colors.darker, fontWeight: 500 }} 
-                   />
+                   <Chip key={tag.id} label={tag.name} size="small" sx={{ mr: 0.5, mb: 0.5, bgcolor: Colors.lightest, color: Colors.darker, fontWeight: 500 }} />
                 ))}
               </Box>
-
-              <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6 }}>
-                {idea.summary}
-              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6 }}>{idea.summary}</Typography>
           </Box>
         </CardContent>
 
-        {/* EXPANDED SECTION */}
         <Collapse in={expanded} timeout="auto" unmountOnExit>
           <Box sx={{ px: 2, pb: 2 }}>
              <Box sx={{ p: 2, bgcolor: "#FAFAFA", borderRadius: 2, border: `1px dashed ${Colors.lighter}` }}>
                  <Typography variant="subtitle2" color={Colors.dark} gutterBottom>Description:</Typography>
-                 <Typography variant="body2" sx={{ whiteSpace: 'pre-line' }}>
-                    {idea.description || "No detailed description provided."}
-                 </Typography>
+                 <Typography variant="body2" sx={{ whiteSpace: 'pre-line' }}>{idea.description || "No detailed description provided."}</Typography>
              </Box>
           </Box>
         </Collapse>
 
-        {/* DIVIDER */}
         <Divider sx={{ mx: 2, borderColor: Colors.lighter }} />
 
-        {/* BOTTOM: Footer */}
         <CardActions sx={{ justifyContent: 'space-between', px: 3, py: 2 }}>
            <Stack direction="row" alignItems="center" spacing={1}>
-                <Tooltip title="Tech Stack">
-                    <CodeIcon fontSize="small" sx={{ color: Colors.mediumDark }} />
-                </Tooltip>
-                <Typography variant="caption" fontWeight="600" color={Colors.dark}>
-                    {idea.tech_stack || "N/A"}
-                </Typography>
+                <Tooltip title="Tech Stack"><CodeIcon fontSize="small" sx={{ color: Colors.mediumDark }} /></Tooltip>
+                <Typography variant="caption" fontWeight="600" color={Colors.dark}>{idea.tech_stack || "N/A"}</Typography>
            </Stack>
-           
            <Chip 
              label={idea.status} 
              variant={idea.status === 'Completed' ? "filled" : "outlined"}
-             sx={{ 
-                 height: 24, 
-                 fontSize: '0.75rem',
-                 bgcolor: idea.status === 'Completed' ? Colors.mediumLight : 'transparent',
-                 color: idea.status === 'Completed' ? 'white' : Colors.mediumDark,
-                 borderColor: Colors.mediumDark
-             }} 
+             sx={{ height: 24, fontSize: '0.75rem', bgcolor: idea.status === 'Completed' ? Colors.mediumLight : 'transparent', color: idea.status === 'Completed' ? 'white' : Colors.mediumDark, borderColor: Colors.mediumDark }} 
            />
         </CardActions>
       </Card>
 
-      {/* --- MENU (Styled) --- */}
+      {/*  DYNAMIC MENU LOGIC  */}
       <Menu 
         anchorEl={anchorEl} 
         open={Boolean(anchorEl)} 
         onClose={handleMenuClose}
-        PaperProps={{
-            elevation: 3,
-            sx: { borderRadius: 2, minWidth: 150 }
-        }}
+        PaperProps={{ elevation: 3, sx: { borderRadius: 2, minWidth: 150 } }}
       >
-        {isOwner ? (
-          [
-            <MenuItem key="edit" onClick={() => { setEditing(true); handleMenuClose(); }} sx={{ gap: 1 }}>
-                 <EditIcon fontSize="small" /> Edit
-            </MenuItem>,
-            <MenuItem key="delete" onClick={handleDelete} sx={{ color: 'error.main', gap: 1 }}>
-                 <DeleteIcon fontSize="small" /> Delete
-            </MenuItem>
-          ]
-        ) : (
-          <MenuItem onClick={() => { setReportOpen(true); handleMenuClose(); }} sx={{ gap: 1 }}>
-              <FlagIcon fontSize="small" /> Report
-          </MenuItem>
-        )}
+        {renderMenuItems()}
       </Menu>
 
-      {/* --- REPORT DIALOG --- */}
+      {/* Report Dialog (Same as before) */}
       <Dialog open={reportOpen} onClose={() => setReportOpen(false)} PaperProps={{ sx: { borderRadius: 3 } }}>
          <DialogTitle sx={{ bgcolor: Colors.lightest, color: Colors.darkest }}>Report Idea</DialogTitle>
          <DialogContent sx={{ minWidth: 350, mt: 2 }}>

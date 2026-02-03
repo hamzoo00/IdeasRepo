@@ -9,6 +9,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/ideas/{type}/{id}', [IdeasController::class, 'getProfileIdeas']);
     Route::put('/ideas/{id}', [IdeasController::class, 'updateUserIdea']);
     Route::delete('/ideas/{id}', [IdeasController::class, 'deleteUserIdea']);
+    Route::get('/my-trash-ideas', [IdeasController::class, 'myTrashIdeas']);
+    Route::put('/ideas/{id}/restore', [IdeasController::class, 'restoreTrashedIdea']);
+    Route::get('/my-ideas/trash-count', [IdeasController::class, 'trashCount']);
 
 });
 

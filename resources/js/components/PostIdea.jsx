@@ -131,6 +131,7 @@ export default function PostIdea() {
       await api.post(endpoint, payload);
       alert("Idea posted successfully!"); 
       handleClose();
+      window.location.reload(); 
     } catch (error) {
       console.error("Failed to post idea", error);
       setApiError(error.response?.data?.message || "Failed to post idea.");
@@ -184,6 +185,8 @@ export default function PostIdea() {
           }}
         >
           Post New Idea
+
+          {/* Embargo Checkbox */}
           <Controller
             name="is_embargo"
             control={control}
@@ -307,7 +310,7 @@ export default function PostIdea() {
                   )}
                 />
               )}
-
+             {/* 3. Status*/}
               <FormControl fullWidth error={!!errors.status}>
                 <InputLabel>Project Status</InputLabel>
                 <Controller
@@ -323,6 +326,7 @@ export default function PostIdea() {
                 />
               </FormControl>
 
+             {/* 4. Summary */}
               <Controller
                 name="summary"
                 control={control}
@@ -343,6 +347,7 @@ export default function PostIdea() {
                 )}
               />
 
+             {/* 5. Description */}
               {!isEmbargo && (
                 <Controller
                   name="description"
@@ -365,6 +370,7 @@ export default function PostIdea() {
             </Stack>
           </DialogContent>
 
+         {/* Action Buttons */}
           <DialogActions sx={{ p: 3, borderTop: `1px solid ${Colors.lighter}`, bgcolor: Colors.lightest }}>
             <Button onClick={handleClose} sx={{ color: Colors.dark, fontWeight: 600 }}>
               Cancel

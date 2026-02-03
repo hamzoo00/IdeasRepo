@@ -29,6 +29,8 @@ class AdminController extends Controller
              ], 401);
          }
     
+         $token = $admin->createToken('admin-token')->plainTextToken;
+
          return response()->json([
              'message' => 'Login successful',
              'admin' => [
@@ -36,7 +38,9 @@ class AdminController extends Controller
                  'login_code' => $admin->login_code,
                  'full_name' => $admin->full_name,
                  'employee_id' => $admin->employee_id
-             ]
+             ],
+             'auth_token' => $token
+
          ], 200);
     }
 

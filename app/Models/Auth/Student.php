@@ -11,7 +11,7 @@ class Student extends Authenticatable
 {
 
       use HasApiTokens;
-     protected $table = 'students';
+     // protected $table = 'students';
  
    protected $fillable =[
         'full_name',

@@ -52,7 +52,8 @@ const [error, setError] = React.useState(null);
      const response = await api.post('/admin/login', payload );
      const adminId = response.data.admin.id;
      localStorage.setItem("admin", JSON.stringify(response.data.admin));
-     navigate(`/${adminId}/admin`)
+     localStorage.setItem("auth_token", response.data.auth_token);
+     navigate(`/${adminId}/admin/profile`)
          
      } else {
         

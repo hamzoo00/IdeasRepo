@@ -48,6 +48,10 @@ return [
             'driver' => 'sanctum',
             'provider' => 'teachers',
     ],
+        'admin' => [
+            'driver' => 'sanctum',
+            'provider' => 'admins',
+    ],
     ],
 
     /*
@@ -79,6 +83,10 @@ return [
         'teachers' => [
             'driver' => 'eloquent',
             'model' => App\Models\Auth\Teacher::class,
+        ],
+        'admins' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Auth\Admin::class,
         ],
         // 'users' => [
         //     'driver' => 'database',

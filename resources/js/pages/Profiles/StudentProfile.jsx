@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import api from '../../components/axios'
 import UpperProfileSection from '../../components/Student/UpperProfileSection';
 import PostIdea from '../../components/PostIdea';
+import LowerProfileSection from '../../components/LowerProfileSection';
 import ErrorMessage from  '../../components/ErrorMessage';
 
 export default function StudentProfile() {
@@ -41,7 +42,11 @@ export default function StudentProfile() {
     <>
             <Header id={id} name={name} />
             <UpperProfileSection profile={profile} isOwner={isOwner} />
-           {isOwner && <PostIdea />}
+            {isOwner && <PostIdea />}
+            <LowerProfileSection isOwner={isOwner} viewedUserId={id} viewedUserType="Student" />
+
+
+            
             <ErrorMessage 
                error={error} 
                clearError={() => setError(null)} 

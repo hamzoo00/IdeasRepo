@@ -79,6 +79,7 @@ export default function UpperProfileSection({ profile, isOwner }) {
 
   const bioValue = watch("bio") || "";
   const wordCount = bioValue.trim().split(/\s+/).filter(Boolean).length;
+  
 
   useEffect(() => {
     if (profile) {
@@ -302,7 +303,7 @@ export default function UpperProfileSection({ profile, isOwner }) {
                     {/* Status Block */}
                     <Box sx={{ flex: "1 1 300px", p: 2, bgcolor: Colors.lightest, borderRadius: 2 }}>
                         <Typography variant="body2" color="textSecondary" gutterBottom>Current Status</Typography>
-                        <Typography variant="body1" fontWeight={600} color={Colors.darker}>{profile.degree} ({profile.program})</Typography>
+                        <Typography variant="body1" fontWeight={600} color={Colors.darker}>{profile.degree} </Typography>
                         <Typography variant="body2">Batch: {profile.batch} • Semester: {profile.semester}</Typography>
                     </Box>
 
@@ -346,9 +347,7 @@ export default function UpperProfileSection({ profile, isOwner }) {
             {/* DIVIDER 2 (New Separation Line) */}
             <Divider sx={{ my: 4, borderColor: Colors.lighter }} />
 
-            {/* ========================================================= */}
             {/* SECTION 3: Details (Bio & Interests) */}
-            {/* ========================================================= */}
             <Box>
                 <Typography variant="h6" sx={{ color: Colors.darkest, mb: 2, fontWeight: 600 }}>
                    Details

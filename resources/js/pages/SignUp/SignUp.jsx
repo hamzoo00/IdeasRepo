@@ -459,9 +459,6 @@ const password = watch("password");
                   {...register("interest")}
                   sx={{ '& .MuiOutlinedInput-root.Mui-focused fieldset': { borderColor: Colors.primary }}}
                 />
-             
-           
-
             </Grid>
 
             {/* Submit Button */}

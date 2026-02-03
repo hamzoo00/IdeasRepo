@@ -5,7 +5,8 @@ import api from '../../components/axios'
 import UpperProfileSection from '../../components/Teacher/Profile/UpperProfileSection';
 import PostIdea from '../../components/PostIdea';
 import ErrorMessage from  '../../components/ErrorMessage';
-import { set } from 'react-hook-form';
+// import { set } from 'react-hook-form';
+import LowerProfileSection from '../../components/LowerProfileSection';
 
 
 export default function TeacherProfile() {
@@ -42,6 +43,8 @@ export default function TeacherProfile() {
         <Header id={id} name={name} />
         <UpperProfileSection profile={profile} isOwner={isOwner} />
         {isOwner && <PostIdea author={'teacher'}/>}
+        <LowerProfileSection isOwner={isOwner} viewedUserId={id} viewedUserType="Teacher" />
+
         <ErrorMessage 
                error={error} 
                clearError={() => setError(null)} 

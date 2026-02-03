@@ -12,7 +12,6 @@ class IdeasController extends Controller
 {
     public function store(Request $request)
     {
-       try {
         // 1. Validate Input
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -22,7 +21,6 @@ class IdeasController extends Controller
             'is_edited' => 'boolean',
             'tags' => 'required|array|min:3|max:5',
             
-            // Conditional Validation
             'description' => 'required_if:is_embargo,false|nullable|string',
             'tech_stack' => 'required_if:is_embargo,false|nullable|string',
         ]);
@@ -46,7 +44,6 @@ class IdeasController extends Controller
         // 4. Process Tags
         $tagIds = [];
         foreach ($validated['tags'] as $tagName) {
-            // Check if tag exists (e.g., "#React"), if not, create it
             $tag = Tag::firstOrCreate(['name' => $tagName]);
             $tagIds[] = $tag->id;
         }
@@ -60,16 +57,85 @@ class IdeasController extends Controller
         ], 201);
     
 
-    } catch (\Exception $e) {
-        // THIS IS THE TRAP
-        // It catches the crash and sends the detailed error to your browser
-        return response()->json([
-            'message' => 'Something failed!',
-            'error' => $e->getMessage(),   // The real error message
-            'file' => $e->getFile(),       // Which file caused it
-            'line' => $e->getLine()        // Which line number
-        ], 500);
-    }
+    
 }
+
+
+
+    public function getProfileIdeas($type, $id)
+    {
+        // 1. Map the URL string ("student") to the Real Class ("App\Models\Student")
+        $modelClass = match(strtolower($type)) {
+            'student' => 'App\Models\Auth\Student',
+            'teacher' => 'App\Models\Auth\Teacher',
+            default => null,
+        };
+
+        if (!$modelClass) {
+            return response()->json(['message' => 'Invalid user type'], 400);
+        }
+
+        // 2. Fetch ideas where author_id = $id AND author_type = $modelClass
+          /** @var \App\Models\Student|\App\Models\Teacher $user */
+        $ideas = Ideas::where('author_id', $id)
+                     ->where('author_type', $modelClass)
+                     ->with('tags', 'author')
+                     ->latest()
+                     ->get();
+
+        return response()->json($ideas);
+    }
+
+
+    public function updateUserIdea(Request $request, $id)
+    {
+        $user = Auth::user();
+        
+        /** @var \App\Models\Student|\App\Models\Teacher $user */
+        $idea = $user->ideas()->findOrFail($id);
+
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'summary' => 'required|string|max:300',
+            'description' => 'nullable|string',
+            'tech_stack' => 'nullable|string',
+            'status' => 'required|in:Ongoing,Completed',
+            'tags' => 'required|array|min:3|max:5'
+        ]);
+
+        $idea->update([
+            'title' => $validated['title'],
+            'summary' => $validated['summary'],
+            'description' => $validated['description'],
+            'tech_stack' => $validated['tech_stack'],
+            'status' => $validated['status'],
+            'is_edited' => true, 
+        ]);
+
+        $tagIds = [];
+        foreach ($validated['tags'] as $tagName) {
+            $tag = Tag::firstOrCreate(['name' => $tagName]);
+            $tagIds[] = $tag->id;
+        }
+
+        //Sync Tags (This removes old tags and adds new ones automatically)
+        $idea->tags()->sync($tagIds);
+
+        return response()->json([
+            'message' => 'Idea updated!', 
+            'idea' => $idea->load('tags')
+        ]);
+    }
+
+    
+    public function deleteUserIdea($id)
+    {
+        $user = Auth::user();
+        /** @var \App\Models\Student|\App\Models\Teacher $user */
+        $idea = $user->ideas()->findOrFail($id);
+        $idea->delete();
+        
+        return response()->json(['message' => 'Idea deleted successfully']);
+    }
 
 }

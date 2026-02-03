@@ -40,7 +40,7 @@ export default function StudentProfile() {
 
     return ( 
     <>
-            <Header id={id} name={name} />
+            <Header id={id} name={name} profileImage={profile?.image} />
             <UpperProfileSection profile={profile} isOwner={isOwner} />
             {isOwner && <PostIdea />}
             <LowerProfileSection isOwner={isOwner} viewedUserId={id} viewedUserType="Student" />

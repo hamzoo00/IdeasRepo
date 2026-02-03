@@ -40,7 +40,7 @@ export default function TeacherProfile() {
        if (!profile) return <div>Profile not found</div>;
     
     return <>
-        <Header id={id} name={name} />
+        <Header id={id} name={name} profileImage={profile?.image} />
         <UpperProfileSection profile={profile} isOwner={isOwner} />
         {isOwner && <PostIdea author={'teacher'}/>}
         <LowerProfileSection isOwner={isOwner} viewedUserId={id} viewedUserType="Teacher" />

@@ -32,6 +32,10 @@ export default function AdminProfile() {
          })();
          return () => { mounted = false; };
        }, [id]);
+
+     const handleProfileUpdate = (updatedProfile) => {
+         setProfile(prev => ({ ...prev, ...updatedProfile })); 
+       };
     
        if (loading) return <div>Loading...</div>;
        if (!profile) return <div>Profile not found</div>;
@@ -39,7 +43,7 @@ export default function AdminProfile() {
     
     return <>
            <Header id={id} name={profile?.name} profileImage={profile?.image} />
-           <UpperProfileSection profile={profile} isOwner={isOwner} />
+           <UpperProfileSection profile={profile} isOwner={isOwner} onUpdate={handleProfileUpdate} />
 
             <ErrorMessage 
                error={error} 

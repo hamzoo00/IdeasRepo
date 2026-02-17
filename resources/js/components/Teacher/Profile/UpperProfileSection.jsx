@@ -53,7 +53,7 @@ const parseList = (str) => {
 };
 
 
-export default function UpperProfileSection({ profile, isOwner }) {
+export default function UpperProfileSection({ profile, isOwner, onUpdate }) {
 
   const [teacherProfile, setTeacherProfile] = useState(profile);
   const [isEditing, setIsEditing] = useState(false);
@@ -164,6 +164,12 @@ export default function UpperProfileSection({ profile, isOwner }) {
         image: freshUser.profile?.image
       }));  
 
+       onUpdate(
+        { image: freshUser.profile.image, 
+          full_name: freshUser.full_name,
+         }
+      )
+      
       console.log(freshUser.image);
 
       setIsEditing(false);

@@ -35,13 +35,17 @@ export default function StudentProfile() {
          return () => { mounted = false; };
        }, [id]);
     
+    const handleProfileUpdate = (updatedProfile) => {
+         setProfile(prev => ({ ...prev, ...updatedProfile })); 
+       };
+
        if (loading) return <div>Loading...</div>;
        if (!profile) return <div>Profile not found</div>;
 
     return ( 
     <>
             <Header id={id} name={name} profileImage={profile?.image} />
-            <UpperProfileSection profile={profile} isOwner={isOwner} />
+            <UpperProfileSection profile={profile} isOwner={isOwner} onUpdate={handleProfileUpdate} />
             {isOwner && <PostIdea />}
             <LowerProfileSection isOwner={isOwner} viewedUserId={id} viewedUserType="Student" />
 

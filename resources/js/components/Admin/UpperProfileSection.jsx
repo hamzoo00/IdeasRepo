@@ -49,7 +49,7 @@ const Colors = {
 };
 
 
-export default function UpperProfileSection({ profile, isOwner }) {
+export default function UpperProfileSection({ profile, isOwner, onUpdate }) {
 
   const [adminProfile, setAdminProfile] = useState(profile);
   const [isEditing, setIsEditing] = useState(false);
@@ -153,12 +153,19 @@ export default function UpperProfileSection({ profile, isOwner }) {
       });
       
        const freshUser = response.data.admin;
+       console.log("Profile updated successfully:", freshUser);
        
        setAdminProfile(prev => ({
         ...prev,
         ...freshUser,
         image: freshUser.profile.image,
       }));  
+
+      onUpdate(
+        { image: freshUser.profile.image, 
+          full_name: freshUser.full_name,
+         }
+      )
 
       setIsEditing(false);
       alert("Profile updated successfully!");

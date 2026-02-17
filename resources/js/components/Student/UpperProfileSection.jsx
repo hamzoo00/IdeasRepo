@@ -50,7 +50,7 @@ const parseInterests = (interestString) => {
   return interestString.split(",").map((item) => item.trim()).filter(i => i);
 };
 
-export default function UpperProfileSection({ profile, isOwner }) {
+export default function UpperProfileSection({ profile, isOwner, onUpdate }) {
 
   const [studentProfile, setStudentProfile] = useState(profile);
   const [isEditing, setIsEditing] = useState(false);
@@ -151,6 +151,7 @@ export default function UpperProfileSection({ profile, isOwner }) {
         image: freshUser.image
       }));  
 
+      onUpdate(freshUser);
       setIsEditing(false);
       alert("Profile updated successfully!");
      

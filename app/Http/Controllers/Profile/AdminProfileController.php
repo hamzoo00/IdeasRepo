@@ -85,7 +85,7 @@ class AdminProfileController extends Controller
                 }
             }
     
-            $path = $request->file('image')->store('teacher_images', 'public');
+            $path = $request->file('image')->store('Admin_images', 'public');
             $profileData['image'] = $path;
         }
     
@@ -97,7 +97,8 @@ class AdminProfileController extends Controller
         return response()->json([
             'message' => 'Profile updated successfully',
             // Return fresh data to update frontend immediately
-            'admin' => $admin->fresh(['profile']),
+            'admin' => $admin->refresh()->load('profile'),
+           
         ]);
     }
 }

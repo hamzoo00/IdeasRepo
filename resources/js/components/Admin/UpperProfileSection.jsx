@@ -51,6 +51,7 @@ const Colors = {
 
 export default function UpperProfileSection({ profile, isOwner }) {
 
+  const [adminProfile, setAdminProfile] = useState(profile);
   const [isEditing, setIsEditing] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
   const [serverError, setServerError] = useState("");
@@ -84,28 +85,30 @@ export default function UpperProfileSection({ profile, isOwner }) {
   const wordCount = bioValue.trim().split(/\s+/).filter(Boolean).length;
 
   useEffect(() => {
-    if (profile) {
+    if (adminProfile) {
       reset({
-        full_name: profile.full_name || "",
-        email: profile.email || "",
-        whatsapp: profile.whatsapp || "",
-        profession: profile.profession || "",
-        office: profile.office || "",
-        office_hours: profile.office_hours || "",
-        bio: profile.bio || "",
+        full_name: adminProfile.full_name || "",
+        email: adminProfile.email || "",
+        whatsapp: adminProfile.whatsapp || "",
+        profession: adminProfile.profession || "",
+        office: adminProfile.office || "",
+        office_hours: adminProfile.office_hours || "",
+        bio: adminProfile.bio || "",
         image: null, 
       });
 
-      if (profile.image) {
-         const url = profile.image.startsWith('http') 
-            ? profile.image 
-            : `http://ideasrepo.test/storage/${profile.image}`;
+      if (adminProfile.image) {
+         const url = adminProfile.image.startsWith('http') 
+            ? adminProfile.image 
+            : `http://ideasrepo.test/storage/${adminProfile.image}`;
          setImagePreview(url);
+         console.log("Image URL set to:", url);
       } else {
          setImagePreview(null);
+         console.log("Image URL set to:", null);
       }
     }
-  }, [profile, reset]);
+  }, [adminProfile, reset]);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -145,13 +148,21 @@ export default function UpperProfileSection({ profile, isOwner }) {
 
     try {
 
-      await api.post("/updateAdminProfile", dataToSend, {
+     const response =  await api.post("/updateAdminProfile", dataToSend, {
         headers: { "Content-Type": "multipart/form-data" },
       });
+      
+       const freshUser = response.data.admin;
+       
+       setAdminProfile(prev => ({
+        ...prev,
+        ...freshUser,
+        image: freshUser.profile.image,
+      }));  
 
       setIsEditing(false);
       alert("Profile updated successfully!");
-      window.location.reload();
+   
     } catch (err) {
       console.error("Update failed", err);
       if (err.response && err.response.status === 422) {
@@ -171,15 +182,15 @@ export default function UpperProfileSection({ profile, isOwner }) {
     setIsEditing(false);
     reset(); 
     clearErrors();
-    if (profile.image) {
-        setImagePreview(`http://ideasrepo.test/storage/${profile.image}`);
+    if (adminProfile.image) {
+        setImagePreview(`http://ideasrepo.test/storage/${adminProfile.image}`);
     } else {
         setImagePreview(null);
     }
   };
 
   const getDisplayedBio = () => {
-    const text = profile.bio || "";
+    const text = adminProfile.bio || "";
     if (!text) return null;
     const words = text.split(/\s+/);
     const limit = 30; 
@@ -187,9 +198,9 @@ export default function UpperProfileSection({ profile, isOwner }) {
     return words.slice(0, limit).join(" ") + "...";
   };
 
-  const showMoreButton = profile?.bio && profile.bio.split(/\s+/).length > 30;
+  const showMoreButton = adminProfile?.bio && adminProfile.bio.split(/\s+/).length > 30;
 
-  if (!profile) {
+  if (!adminProfile) {
     return (
       <Box display="flex" justifyContent="center" p={5}>
         <CircularProgress sx={{ color: Colors.primary }} />
@@ -246,7 +257,7 @@ export default function UpperProfileSection({ profile, isOwner }) {
                 >
                   <Avatar
                     src={imagePreview}
-                    alt={profile.full_name}
+                    alt={adminProfile.full_name}
                     sx={{ width: 150, height: 150, border: `4px solid ${Colors.lightest}`, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
                   />
                 </Badge>
@@ -272,7 +283,7 @@ export default function UpperProfileSection({ profile, isOwner }) {
                   </Stack>
                 ) : (
                   <>
-                    <Typography variant="h4" fontWeight="bold" sx={{ color: Colors.darkest, mb: 0.5 }}>{profile.full_name}</Typography>
+                    <Typography variant="h4" fontWeight="bold" sx={{ color: Colors.darkest, mb: 0.5 }}>{adminProfile.full_name}</Typography>
                     
                     {/* University Name with Icon */}
                     <Stack direction="row" alignItems="center" justifyContent={{ xs: "center", md: "flex-start" }} spacing={1} sx={{ mt: 1, color: Colors.dark }}>
@@ -339,19 +350,19 @@ export default function UpperProfileSection({ profile, isOwner }) {
                               {/* Display Mode */}
                               <Box>
                                 <Typography variant="caption" color="textSecondary">Profession</Typography>
-                                <Typography variant="body1" fontWeight={600} color={Colors.darker}>{profile.profession || "Not specified"}</Typography>
+                                <Typography variant="body1" fontWeight={600} color={Colors.darker}>{adminProfile.profession || "Not specified"}</Typography>
                               </Box>
                               
                               <Divider sx={{ borderColor: "rgba(0,0,0,0.05)" }} />
                               
                               <Stack direction="row" spacing={1} alignItems="center">
                                  <OfficeIcon fontSize="small" color="action" />
-                                 <Typography variant="body2">{profile.office || "No office location added"}</Typography>
+                                 <Typography variant="body2">{adminProfile.office || "No office location added"}</Typography>
                               </Stack>
                               
                               <Stack direction="row" spacing={1} alignItems="center">
                                  <TimeIcon fontSize="small" color="action" />
-                                 <Typography variant="body2">{profile.office_hours || "No office hours added"}</Typography>
+                                 <Typography variant="body2">{adminProfile.office_hours || "No office hours added"}</Typography>
                               </Stack>
                            </Stack>
                         )}
@@ -382,11 +393,11 @@ export default function UpperProfileSection({ profile, isOwner }) {
                             <Stack spacing={2}>
                               <Stack direction="row" alignItems="center" spacing={2}>
                                 <EmailIcon sx={{ color: Colors.primary }} />
-                                <Typography sx={{ wordBreak: "break-all" }}>{profile.email}</Typography>
+                                <Typography sx={{ wordBreak: "break-all" }}>{adminProfile.email}</Typography>
                               </Stack>
                               <Stack direction="row" alignItems="center" spacing={2}>
                                 <WhatsAppIcon sx={{ color: Colors.primary }} />
-                                <Typography>{profile.whatsapp || "No number added"}</Typography>
+                                <Typography>{adminProfile.whatsapp || "No number added"}</Typography>
                               </Stack>
                             </Stack>
                           )}
@@ -443,7 +454,7 @@ export default function UpperProfileSection({ profile, isOwner }) {
                     {/* Bio Display */}
                     <Typography variant="subtitle2" gutterBottom color="textSecondary">Bio</Typography>
                     <Box sx={{ p: 2, border: `1px dashed ${Colors.primary}`, borderRadius: 2, bgcolor: "#FAFAFA", width: "100%" }}>
-                        {profile.bio ? (
+                        {adminProfile.bio ? (
                             <>
                                 <Typography variant="body2" color="textSecondary" sx={{whiteSpace: 'pre-line'}}>
                                     {getDisplayedBio()}

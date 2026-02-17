@@ -31,6 +31,7 @@ import {
 } from "@mui/icons-material";
 import api from "../axios"; 
 import ErrorMessage from "../ErrorMessage";
+import { set } from "date-fns";
 
 const Colors = {
   darkest: "#03045E",
@@ -51,6 +52,7 @@ const parseInterests = (interestString) => {
 
 export default function UpperProfileSection({ profile, isOwner }) {
 
+  const [studentProfile, setStudentProfile] = useState(profile);
   const [isEditing, setIsEditing] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
   const [serverError, setServerError] = useState("");
@@ -82,26 +84,26 @@ export default function UpperProfileSection({ profile, isOwner }) {
   
 
   useEffect(() => {
-    if (profile) {
+    if (studentProfile) {
       reset({
-        full_name: profile.full_name || "",
-        email: profile.email || "",
-        whatsapp: profile.whatsapp || "",
-        interest: profile.interest ? profile.interest.toUpperCase() : "",
-        bio: profile.bio || "",
+        full_name: studentProfile.full_name || "",
+        email: studentProfile.email || "",
+        whatsapp: studentProfile.whatsapp || "",
+        interest: studentProfile.interest ? studentProfile.interest.toUpperCase() : "",
+        bio: studentProfile.bio || "",
         image: null, 
       });
 
-      if (profile.image) {
-         const url = profile.image.startsWith('http') 
-            ? profile.image 
-            : `http://ideasrepo.test/storage/${profile.image}`;
+      if (studentProfile.image) {
+         const url = studentProfile.image.startsWith('http') 
+            ? studentProfile.image 
+            : `http://ideasrepo.test/storage/${studentProfile.image}`;
          setImagePreview(url);
       } else {
          setImagePreview(null);
       }
     }
-  }, [profile, reset]);
+  }, [studentProfile, reset]);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -137,13 +139,21 @@ export default function UpperProfileSection({ profile, isOwner }) {
     dataToSend.append("_method", "PUT");
 
     try {
-      await api.post("/updateStudentProfile", dataToSend, {
+      const response = await api.post("/updateStudentProfile", dataToSend, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
+      const freshUser = response.data.student;
+  
+       setStudentProfile(prev => ({
+        ...prev,
+        ...freshUser,
+        image: freshUser.image
+      }));  
+
       setIsEditing(false);
       alert("Profile updated successfully!");
-      window.location.reload();
+     
     } catch (err) {
       console.error("Update failed", err);
       if (err.response && err.response.status === 422) {
@@ -162,15 +172,15 @@ export default function UpperProfileSection({ profile, isOwner }) {
     setIsEditing(false);
     reset(); 
     clearErrors();
-    if (profile.image) {
-        setImagePreview(`http://ideasrepo.test/storage/${profile.image}`);
+    if (studentProfile.image) {
+        setImagePreview(`http://ideasrepo.test/storage/${studentProfile.image}`);
     } else {
         setImagePreview(null);
     }
   };
 
   const getDisplayedBio = () => {
-    const text = profile.bio || "";
+    const text = studentProfile.bio || "";
     if (!text) return null;
     
     const words = text.split(/\s+/);
@@ -182,9 +192,9 @@ export default function UpperProfileSection({ profile, isOwner }) {
     return words.slice(0, limit).join(" ") + "...";
   };
 
-  const showMoreButton = profile?.bio && profile.bio.split(/\s+/).length > 30;
+  const showMoreButton = studentProfile?.bio && studentProfile.bio.split(/\s+/).length > 30;
 
-  if (!profile) {
+  if (!studentProfile) {
     return (
       <Box display="flex" justifyContent="center" p={5}>
         <CircularProgress sx={{ color: Colors.primary }} />
@@ -258,14 +268,14 @@ export default function UpperProfileSection({ profile, isOwner }) {
                         <TextField {...field} fullWidth label="Full Name" variant="outlined" size="small" error={!!errors.full_name} helperText={errors.full_name?.message} />
                       )}
                     />
-                    <TextField disabled label="University" value={profile.university_name || ""} size="small" sx={{ bgcolor: Colors.lightest }} />
+                    <TextField disabled label="University" value={studentProfile.university_name || ""} size="small" sx={{ bgcolor: Colors.lightest }} />
                   </Stack>
                 ) : (
                   <>
-                    <Typography variant="h4" fontWeight="bold" sx={{ color: Colors.darkest, mb: 0.5 }}>{profile.full_name}</Typography>
+                    <Typography variant="h4" fontWeight="bold" sx={{ color: Colors.darkest, mb: 0.5 }}>{studentProfile.full_name}</Typography>
                     <Stack direction="row" alignItems="center" justifyContent={{ xs: "center", md: "flex-start" }} spacing={1} sx={{ mt: 1, color: Colors.dark }}>
                       <SchoolIcon fontSize="small" />
-                      <Typography variant="body1">{profile.university_name}</Typography>
+                      <Typography variant="body1">{studentProfile.university_name}</Typography>
                     </Stack>
                   </>
                 )}
@@ -303,8 +313,8 @@ export default function UpperProfileSection({ profile, isOwner }) {
                     {/* Status Block */}
                     <Box sx={{ flex: "1 1 300px", p: 2, bgcolor: Colors.lightest, borderRadius: 2 }}>
                         <Typography variant="body2" color="textSecondary" gutterBottom>Current Status</Typography>
-                        <Typography variant="body1" fontWeight={600} color={Colors.darker}>{profile.degree} </Typography>
-                        <Typography variant="body2">Batch: {profile.batch} • Semester: {profile.semester}</Typography>
+                        <Typography variant="body1" fontWeight={600} color={Colors.darker}>{studentProfile.degree} </Typography>
+                        <Typography variant="body2">Batch: {studentProfile.batch} • Semester: {studentProfile.semester}</Typography>
                     </Box>
 
                     {/* Contact Block */}
@@ -332,11 +342,11 @@ export default function UpperProfileSection({ profile, isOwner }) {
                             <Stack spacing={1}>
                               <Stack direction="row" alignItems="center" spacing={2}>
                                 <EmailIcon sx={{ color: Colors.primary }} />
-                                <Typography sx={{ wordBreak: "break-all" }}>{profile.email}</Typography>
+                                <Typography sx={{ wordBreak: "break-all" }}>{studentProfile.email}</Typography>
                               </Stack>
                               <Stack direction="row" alignItems="center" spacing={2}>
                                 <WhatsAppIcon sx={{ color: Colors.primary }} />
-                                <Typography>{profile.whatsapp || "No number added"}</Typography>
+                                <Typography>{studentProfile.whatsapp || "No number added"}</Typography>
                               </Stack>
                             </Stack>
                           )}
@@ -411,8 +421,8 @@ export default function UpperProfileSection({ profile, isOwner }) {
                     {/* Interests Display */}
                     <Typography variant="subtitle2" gutterBottom color="textSecondary">Interests</Typography>
                     <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 3, width: "100%" }}>
-                      {parseInterests(profile.interest).length > 0 ? (
-                        parseInterests(profile.interest).map((tag, index) => (
+                      {parseInterests(studentProfile.interest).length > 0 ? (
+                        parseInterests(studentProfile.interest).map((tag, index) => (
                           <Chip key={index} label={tag} sx={{ bgcolor: Colors.light, color: Colors.darkest, fontWeight: 500 }} />
                         ))
                       ) : (
@@ -423,7 +433,7 @@ export default function UpperProfileSection({ profile, isOwner }) {
                     {/* Bio Display */}
                     <Typography variant="subtitle2" gutterBottom color="textSecondary">Bio</Typography>
                     <Box sx={{ p: 2, border: `1px dashed ${Colors.primary}`, borderRadius: 2, bgcolor: "#FAFAFA", width: "100%" }}>
-                        {profile.bio ? (
+                        {studentProfile.bio ? (
                             <>
                                 <Typography variant="body2" color="textSecondary" sx={{whiteSpace: 'pre-line'}}>
                                     {getDisplayedBio()}
@@ -443,7 +453,7 @@ export default function UpperProfileSection({ profile, isOwner }) {
                             </>
                         ) : (
                             <Typography variant="body2" color="textSecondary" sx={{ fontStyle: "italic" }}>
-                                "Student at {profile.university_name} pursuing {profile.degree}."
+                                "Student at {studentProfile.university_name} pursuing {profile.degree}."
                             </Typography>
                         )}
                     </Box>

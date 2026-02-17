@@ -104,7 +104,8 @@ class TeacherProfileController extends Controller
         return response()->json([
             'message' => 'Profile updated successfully',
             // Return fresh data to update frontend immediately
-            'teacher' => $teacher->refresh(['profile']), 
+            'teacher' => $teacher->refresh()->load('profile'),
+            
         ]);
     }
 }

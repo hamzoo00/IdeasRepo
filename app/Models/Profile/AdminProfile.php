@@ -20,12 +20,5 @@ class AdminProfile extends Model
     {
         return $this->belongsTo(Admin::class);
     }
-    protected $appends = ['profile_url'];
-
-    public function getProfileUrlAttribute()
-    {
-        return $this->image
-            ? asset('storage/' . $this->image)
-            : null;
-    }
+  
 }

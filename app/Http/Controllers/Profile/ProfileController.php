@@ -92,7 +92,7 @@ class ProfileController extends Controller
 
         return response()->json([
             'message' => 'Profile updated successfully',
-            'user' => $student->refresh(),
+            'student' => $student->refresh(),
             'image_url' => $student->image ? asset('storage/' . $student->image) : null
         ], 200);
     }

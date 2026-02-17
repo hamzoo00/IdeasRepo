@@ -109,7 +109,7 @@ class IdeasController extends Controller
             'description' => $validated['description'],
             'tech_stack' => $validated['tech_stack'],
             'status' => $validated['status'],
-            'is_edited' => true, 
+            'is_edited' => true,
         ]);
 
         $tagIds = [];
@@ -160,7 +160,6 @@ class IdeasController extends Controller
         $user = Auth::user();
         
         // 1. Find the idea, even if it is already in the trash
-        // "withTrashed()" is the magic fix here!
         /** @var \App\Models\Student|\App\Models\Teacher $user */
         $idea = $user->ideas()->withTrashed()->findOrFail($id);
 

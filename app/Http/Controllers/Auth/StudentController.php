@@ -83,7 +83,7 @@ class StudentController extends Controller
              ], 401);
          }
 
-         $token = $student->createToken('student-token')->plainTextToken; // Bearer type
+         $token = $student->createToken('student-token')->plainTextToken; 
     
          return response()->json([
              'message' => 'Login successful',

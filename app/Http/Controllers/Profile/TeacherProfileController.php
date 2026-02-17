@@ -53,16 +53,16 @@ class TeacherProfileController extends Controller
             'full_name'    => 'required|string|max:255',
             
             'email'        => ['required', 'email', Rule::unique('teachers')->ignore($teacher->id)],
-            'whatsapp'     => 'nullable|string|max:20',
+            'whatsapp'     => 'nullable|string|max:13',
             'profession'   => 'nullable|string|max:100',
             'office'       => 'nullable|string|max:100',
             'office_hours' => 'nullable|string|max:100',
-            'expertise'    => 'nullable|string', 
+            'expertise'    => 'nullable|string|max:1000',
             'bio'          => 'nullable|string|max:5000',
             'image'        => 'nullable|image|mimes:jpeg,png,jpg|max:5120', // Max 5MB
         ]);
     
-        // Updates Main Teacher Table 
+        // Updates Main Teacher Table
         $teacher->update([
             'full_name' => $validated['full_name'],
             'email'     => $validated['email'],
@@ -104,7 +104,7 @@ class TeacherProfileController extends Controller
         return response()->json([
             'message' => 'Profile updated successfully',
             // Return fresh data to update frontend immediately
-            'teacher' => $teacher->fresh(['profile']), 
+            'teacher' => $teacher->refresh(['profile']), 
         ]);
     }
 }

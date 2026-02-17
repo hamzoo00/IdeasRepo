@@ -57,7 +57,7 @@ class ProfileController extends Controller
                 Rule::unique('students', 'email')->ignore($student->id),
             ],
             
-            'whatsapp' => 'nullable|string|max:20',
+            'whatsapp' => 'nullable|string|max:13',
             'interest' => 'nullable|string|max:1000',
             'bio' => 'nullable|string|max:5000',
             
@@ -65,7 +65,7 @@ class ProfileController extends Controller
         ], [
            
             'email.unique' => 'This email address is already registered by another student.',
-            'image.max' => 'The image size must not exceed 2MB.',
+            'image.max' => 'The image size must not exceed 5MB.',
             'image.mimes' => 'The image must be a file of type: jpeg, png, jpg.',
         ]);
 

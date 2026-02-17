@@ -3,10 +3,11 @@
 namespace App\Models\Auth;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use App\Models\Profile\AdminProfile;
 use Laravel\Sanctum\HasApiTokens;
 
-class Admin extends Model
+class Admin extends Authenticatable
 {
     use HasApiTokens;
 
@@ -26,4 +27,13 @@ class Admin extends Model
     {
         return $this->hasOne(AdminProfile::class);
     }
+
+      protected $appends = ['profile_url'];
+      
+      public function getProfileUrlAttribute()
+      {
+          return $this->image
+              ? asset('storage/' . $this->image)
+              : null;
+      }
 }

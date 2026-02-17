@@ -97,7 +97,7 @@ class AdminProfileController extends Controller
         return response()->json([
             'message' => 'Profile updated successfully',
             // Return fresh data to update frontend immediately
-            'admin' => $admin->fresh(['profile']), 
+            'admin' => $admin->fresh(['profile']),
         ]);
     }
 }

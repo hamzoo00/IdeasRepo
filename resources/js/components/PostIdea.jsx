@@ -63,7 +63,7 @@ export default function PostIdea() {
       description: "",
       summary: "",
       tech_stack: "",
-      status: "Ongoing",
+      status: "In Progress",
       is_embargo: false,
     },
     shouldUnregister: true, 
@@ -133,7 +133,6 @@ export default function PostIdea() {
       handleClose();
       window.location.reload(); 
     } catch (error) {
-      console.error("Failed to post idea", error);
       setApiError(error.response?.data?.message || "Failed to post idea.");
     }
   };
@@ -319,7 +318,7 @@ export default function PostIdea() {
                   rules={{ required: true }}
                   render={({ field }) => (
                     <Select {...field} label="Project Status">
-                      <MenuItem value="Ongoing">Ongoing</MenuItem>
+                      <MenuItem value="In Progress">In Progress</MenuItem>
                       <MenuItem value="Completed">Completed</MenuItem>
                     </Select>
                   )}

@@ -16,7 +16,7 @@ class IdeasController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'summary' => 'required|string|max:300',
-            'status' => 'required|in:Ongoing,Completed',
+            'status' => 'required|in:In Progress,Completed',
             'is_embargo' => 'boolean',
             'is_edited' => 'boolean',
             'tags' => 'required|array|min:3|max:5',
@@ -99,7 +99,7 @@ class IdeasController extends Controller
             'summary' => 'required|string|max:300',
             'description' => 'nullable|string',
             'tech_stack' => 'nullable|string',
-            'status' => 'required|in:Ongoing,Completed',
+            'status' => 'required|in:In Progress,Completed,Abandoned',
             'tags' => 'required|array|min:3|max:5'
         ]);
 

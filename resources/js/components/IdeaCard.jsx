@@ -180,7 +180,7 @@ export default function IdeaCard({ idea, isOwner, refreshIdeas, isTrashMode }) {
             <RestoreIcon fontSize="small" /> Restore
         </MenuItem>,
         <MenuItem key="delete" onClick={handleDelete} sx={{ color: 'error.main', gap: 1 }}>
-            <DeleteForeverIcon fontSize="small" /> Delete Forever
+            <DeleteForeverIcon fontSize="small" /> Permanantly Delete
         </MenuItem>
       ];
     }
@@ -206,7 +206,22 @@ export default function IdeaCard({ idea, isOwner, refreshIdeas, isTrashMode }) {
         
         <CardContent sx={{ p: 3 }}>
             <Stack spacing={3}>
+              {/* status and title on top row, tags below, then summary and description */}
                 <TextField fullWidth label="Title" value={editData.title} onChange={(e) => setEditData({...editData, title: e.target.value})} />
+                  <FormControl fullWidth>
+                  <InputLabel id="status-select-label">Status</InputLabel>
+                  <Select
+                    labelId="status-select-label"
+                    value={editData.status}
+                    label="Status"
+                    onChange={(e) => setEditData({ ...editData, status: e.target.value })}
+                  >
+                    <MenuItem value="In Progress">In Progress</MenuItem>
+                    <MenuItem value="Completed">Completed</MenuItem>
+                    <MenuItem value="Abandoned">Abandoned</MenuItem>
+                  </Select>
+                </FormControl>
+
                 <Autocomplete
                     multiple freeSolo
                     options={[]}

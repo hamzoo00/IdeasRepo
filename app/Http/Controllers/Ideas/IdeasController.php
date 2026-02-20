@@ -10,6 +10,25 @@ use Illuminate\Support\Facades\Auth;
 
 class IdeasController extends Controller
 {
+
+   public function index($id)
+   {
+         //1. Authorize user
+         $user = Auth::user();
+         $is_owner = $user && $user->id === $id;
+
+    // Fetch all ideas, including their author and tags, ordered by newest
+    $ideas = Ideas::with(['author', 'tags'])
+                  ->orderBy('created_at', 'desc')
+                  ->get();
+
+    return response()->json([
+        'ideas' => $ideas,
+        'is_owner' => $is_owner,
+    ]);
+    }
+
+
     public function store(Request $request)
     {
         // 1. Validate Input
@@ -26,8 +45,7 @@ class IdeasController extends Controller
         ]);
 
         // 2. Determine Author
-          $user = Auth::user();
-        // Security Check: is it owner will add later if got i got any problem
+          $user = Auth::user(); 
         
         // 3. Create the Idea
         /** @var \App\Models\Student|\App\Models\Teacher $user */

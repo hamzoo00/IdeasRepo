@@ -13,5 +13,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/ideas/{id}/restore', [IdeasController::class, 'restoreTrashedIdea']);
     Route::get('/my-ideas/trash-count', [IdeasController::class, 'trashCount']);
 
+    Route::get('/{id}/feed', [IdeasController::class, 'index']);
+
 });
 

@@ -42,7 +42,7 @@ export default function AdminProfile() {
 
     
     return <>
-           <Header id={id} name={profile?.name} profileImage={profile?.image} />
+           <Header id={id} name={profile?.name} profileImage={profile?.image} profileType="admin" />
            <UpperProfileSection profile={profile} isOwner={isOwner} onUpdate={handleProfileUpdate} />
 
             <ErrorMessage 

@@ -29,7 +29,7 @@ const Colors = {
 };
 
 
-export default function Header({id, name, profileImage}) {
+export default function Header({id, name, profileImage, profileType}) {
 
     const [imagePreview, setImagePreview] = useState(null);
 
@@ -43,6 +43,11 @@ export default function Header({id, name, profileImage}) {
          setImagePreview(null);
       }
     }, [profileImage]);
+
+    let path = `/${name}/${id}/profile`;
+
+    if(profileType === "admin") { path = `/${id}/admin/profile`;}
+    else if(profileType === "teacher"){ path = `/${name}/${id}/teacher/profile`;}
       
     
     const pages = [
@@ -51,7 +56,7 @@ export default function Header({id, name, profileImage}) {
     ];
     
     const settings = [
-       { label: "Profile", path: `/${name}/${id}/profile`},
+       { label: "Profile", path: path},
        { label: "Home", path: `/${name}/${id}/home` },
        { label: "Contact Us", path: "/contactUs" },
        { label: "Logout", path: "/" },

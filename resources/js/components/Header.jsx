@@ -14,6 +14,8 @@ import MenuItem from '@mui/material/MenuItem';
 import AdbIcon from '@mui/icons-material/Adb';
 import { Link } from 'react-router';
 import { useState, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { clearUser} from '../store/slices/userDetailsSlice';
 
 
 const Colors = {
@@ -31,6 +33,7 @@ const Colors = {
 
 export default function Header({id, name, profileImage, profileType}) {
 
+    const dispatch = useDispatch();  
     const [imagePreview, setImagePreview] = useState(null);
 
     useEffect(() => {
@@ -218,8 +221,13 @@ export default function Header({id, name, profileImage, profileType}) {
               {settings.map((setting) => (
                 <MenuItem 
                 component={Link}
-                to ={setting.path}
-                key={setting.path} onClick={handleCloseUserMenu}
+                to ={setting.path }
+                key={setting.path} onClick={() => {
+                  handleCloseUserMenu();
+                  if (setting.label === "Logout") {
+                    dispatch(clearUser());
+                  }
+                }}
                  sx={{ textAlign: 'center' ,
                     '&:hover': {
                      transform: 'scale(1.1)',}}}

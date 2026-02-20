@@ -7,16 +7,33 @@ import PostIdea from '../../components/PostIdea';
 import ErrorMessage from  '../../components/ErrorMessage';
 // import { set } from 'react-hook-form';
 import LowerProfileSection from '../../components/LowerProfileSection';
+import { useDispatch } from 'react-redux';
+import { setUser} from '../../store/slices/userDetailsSlice';
 
 
 export default function TeacherProfile() {
     
     const {id, name} = useParams();
+    const dispatch = useDispatch();
 
      const [profile, setProfile] = useState(null);
      const [isOwner, setIsOwner] = useState(false);
      const [loading, setLoading] = useState(true);
      const [error, setError] = useState(null);
+
+     
+    const syncUserToRedux = (latestProfileData, ownerCheck) => {
+    if (ownerCheck) {
+      dispatch(setUser({
+        id: latestProfileData.id,
+        full_name: latestProfileData.full_name,
+        image: latestProfileData.image,
+        type: 'teacher', 
+        is_owner: true,
+      }));
+    }
+  };
+   
 
      useEffect(() => {
          let mounted = true;
@@ -24,8 +41,11 @@ export default function TeacherProfile() {
            try {
              const res = await api.get(`/teacher/profile/${id}`);
              if (!mounted) return;
-             setProfile(res.data.profile);
-             setIsOwner(res.data.is_owner);
+             const profileData = res.data.profile;
+             const isProfileOwner = res.data.is_owner;
+             setProfile(profileData);
+             setIsOwner(isProfileOwner);
+             syncUserToRedux(profileData, isProfileOwner);
 
            } catch (err) {
              setError("Failed to load profile. Please try again later.\n" + err.message);
@@ -37,7 +57,10 @@ export default function TeacherProfile() {
        }, [id]);
 
      const handleProfileUpdate = (updatedProfile) => {
-         setProfile(prev => ({ ...prev, ...updatedProfile })); 
+         const latestProfile = { ...profile, ...updatedProfile };
+
+         setProfile(latestProfile); 
+         syncUserToRedux(latestProfile, isOwner);
        };   
     
        if (loading) return <div>Loading...</div>;

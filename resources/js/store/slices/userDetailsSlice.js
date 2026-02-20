@@ -4,6 +4,7 @@ const authSlice = createSlice({
   name: 'auth',
   initialState: {
     user: null, 
+    userImage: null,
   },
   reducers: {
     
@@ -13,9 +14,15 @@ const authSlice = createSlice({
    
     clearUser: (state) => {
       state.user = null;
-    }
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('persist:root');
+      localStorage.removeItem('student');
+      localStorage.removeItem('teacher');
+      localStorage.removeItem('admin');
+    },
+
   },
 });
 
-export const { setUser, clearUser } = authSlice.actions;
+export const { setUser, clearUser, } = authSlice.actions;
 export default authSlice.reducer;

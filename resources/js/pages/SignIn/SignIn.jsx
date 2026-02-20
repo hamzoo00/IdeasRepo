@@ -47,7 +47,6 @@ const [error, setError] = React.useState(null);
                 password: data.password          
           }; 
      const response = await api.post('/login', payload );
-     console.log(response.data.message);
 
      const studentId = response.data.student.id;
      const studentName = response.data.student.full_name;

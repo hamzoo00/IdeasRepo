@@ -66,7 +66,7 @@ const [error, setError] = React.useState(null);
 
      const teacherId = response.data.teacher.id;
       const teacherName = response.data.teacher.full_name;
-     localStorage.setItem("Teacher", JSON.stringify(response.data.teacher));
+     localStorage.setItem("teacher", JSON.stringify(response.data.teacher));
      localStorage.setItem("auth_token", response.data.auth_token);
      navigate(`/${teacherName}/${teacherId}/teacher/profile`);
          

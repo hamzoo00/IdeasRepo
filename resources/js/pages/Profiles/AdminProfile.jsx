@@ -5,15 +5,30 @@ import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import api from '../../components/axios'
 import ErrorMessage from  '../../components/ErrorMessage';
+import { useDispatch } from 'react-redux';
+import { setUser} from '../../store/slices/userDetailsSlice';
 
 export default function AdminProfile() {
 
      const {id} = useParams();
+     const dispatch = useDispatch();
 
      const [profile, setProfile] = useState(null);
      const [isOwner, setIsOwner] = useState(false);
      const [loading, setLoading] = useState(true);
      const [error, setError] = useState(null);
+
+     const syncUserToRedux = (latestProfileData, ownerCheck) => {
+         if (ownerCheck) {
+           dispatch(setUser({
+             id: latestProfileData.id,
+             full_name: latestProfileData.full_name,
+             image: latestProfileData.image,
+             type: 'admin', 
+             is_owner: true,
+           }));
+         }
+       };
 
      useEffect(() => {
          let mounted = true;
@@ -21,8 +36,11 @@ export default function AdminProfile() {
            try {
              const res = await api.get(`/admin/profile/${id}`);
              if (!mounted) return;
-             setProfile(res.data.profile);
-             setIsOwner(res.data.is_owner);
+             const profileData = res.data.profile;
+             const isProfileOwner = res.data.is_owner;
+             setProfile(profileData);
+             setIsOwner(isProfileOwner);
+             syncUserToRedux(profileData, isProfileOwner);
 
            } catch (err) {
              setError("Failed to load profile. Please try again later.\n" + err.message);
@@ -34,7 +52,10 @@ export default function AdminProfile() {
        }, [id]);
 
      const handleProfileUpdate = (updatedProfile) => {
-         setProfile(prev => ({ ...prev, ...updatedProfile })); 
+         const latestProfile = { ...profile, ...updatedProfile };
+
+         setProfile(latestProfile); 
+         syncUserToRedux(latestProfile, isOwner);
        };
     
        if (loading) return <div>Loading...</div>;

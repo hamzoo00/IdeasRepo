@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import api from '../../components/axios'
 import UpperProfileSection from '../../components/Student/UpperProfileSection';
 import PostIdea from '../../components/PostIdea';
-import LowerProfileSection from '../../components/LowerProfileSection';
+import LowerProfileSection from '../../components/ProfileSharedComponents/LowerProfileSection';
 import ErrorMessage from  '../../components/ErrorMessage';
 import { useDispatch } from 'react-redux';
 import { setUser} from '../../store/slices/userDetailsSlice';

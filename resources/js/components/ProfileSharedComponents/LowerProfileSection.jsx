@@ -14,9 +14,9 @@ import SentimentDissatisfiedIcon from '@mui/icons-material/SentimentDissatisfied
 import DeleteIcon from '@mui/icons-material/Delete';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'; // Inactive Trash Icon
 import AutoDeleteIcon from '@mui/icons-material/AutoDelete'; // Restore Icon for empty state
-import api from './axios'; 
+import api from '../axios'; 
 import IdeaCard from './IdeaCard';
-import ErrorMessage from './ErrorMessage';
+import ErrorMessage from '../ErrorMessage';
 
 
 const Colors = {

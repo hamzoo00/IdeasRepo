@@ -40,7 +40,7 @@ import {
   DeleteForever as DeleteForeverIcon    
 } from '@mui/icons-material';
 import { formatDistanceToNow } from 'date-fns';
-import api from './axios';
+import api from '../axios';
 
 
 

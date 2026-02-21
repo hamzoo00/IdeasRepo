@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Ideas\IdeasController;
+use App\Models\Ideas\Ideas;
 
 Route::middleware('auth:sanctum')->group(function () {
     
@@ -13,7 +14,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/ideas/{id}/restore', [IdeasController::class, 'restoreTrashedIdea']);
     Route::get('/my-ideas/trash-count', [IdeasController::class, 'trashCount']);
 
-    Route::get('/{id}/feed', [IdeasController::class, 'index']);
+   Route::get('/feed', function ()
+    {
+
+        $ideas = Ideas::with(['author', 'tags'])
+           
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json($ideas, 200);
+    });
 
 });
 

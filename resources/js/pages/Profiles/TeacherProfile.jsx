@@ -6,7 +6,7 @@ import UpperProfileSection from '../../components/Teacher/Profile/UpperProfileSe
 import PostIdea from '../../components/PostIdea';
 import ErrorMessage from  '../../components/ErrorMessage';
 // import { set } from 'react-hook-form';
-import LowerProfileSection from '../../components/LowerProfileSection';
+import LowerProfileSection from '../../components/ProfileSharedComponents/LowerProfileSection';
 import { useDispatch } from 'react-redux';
 import { setUser} from '../../store/slices/userDetailsSlice';
 

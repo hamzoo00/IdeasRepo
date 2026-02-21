@@ -79,7 +79,7 @@ export default function Home() {
     return (
         <>
           <Header id={id} name={name} profileImage={profileImage} profileType={profileType}/>
-          {isOwner && <PostIdea />}
+          {isOwner ?? <PostIdea />}
           
           <Container maxWidth="md" sx={{ mt: 4, mb: 8 }}>
             

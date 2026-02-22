@@ -7,11 +7,13 @@ import api from '../../components/axios'
 import ErrorMessage from  '../../components/ErrorMessage';
 import { useDispatch } from 'react-redux';
 import { setUser} from '../../store/slices/userDetailsSlice';
+import { useNavigate } from 'react-router-dom';
 
 export default function AdminProfile() {
 
      const {id} = useParams();
      const dispatch = useDispatch();
+     const navigate = useNavigate();
 
      const [profile, setProfile] = useState(null);
      const [isOwner, setIsOwner] = useState(false);
@@ -41,6 +43,10 @@ export default function AdminProfile() {
              setProfile(profileData);
              setIsOwner(isProfileOwner);
              syncUserToRedux(profileData, isProfileOwner);
+
+            if (profileData?.full_name?.trim().toLocaleLowerCase() !== name.trim().toLocaleLowerCase()) {
+              navigate(`/${profileData.full_name}/${id}/profile`, { replace: true });
+             }
 
            } catch (err) {
              setError("Failed to load profile. Please try again later.\n" + err.message);

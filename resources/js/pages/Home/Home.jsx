@@ -74,7 +74,6 @@ export default function Home() {
             navigate(`/${logInUserName}/${logInUserId}/home`, { replace: true });
             return; 
      }
-       
         fetchFeed();
     }, [id, logInUserId]);
 
@@ -93,7 +92,7 @@ export default function Home() {
     return (
         <>
           <Header id={id} name={name} profileImage={profileImage} profileType={profileType}/>
-          {isOwner && <PostIdea />}
+          <PostIdea />
           
           <Container maxWidth="md" sx={{ mt: 4, mb: 8 }}>
             

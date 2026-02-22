@@ -8,11 +8,13 @@ import LowerProfileSection from '../../components/ProfileSharedComponents/LowerP
 import ErrorMessage from  '../../components/ErrorMessage';
 import { useDispatch } from 'react-redux';
 import { setUser} from '../../store/slices/userDetailsSlice';
+import { useNavigate } from 'react-router-dom';
 
 export default function StudentProfile() {
 
-    const {id, name} = useParams();
+    const {id, name} = useParams();         // thoughout entire app the id and name represent url ID and Name
     const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     const [profile, setProfile] = useState(null);
     const [isOwner, setIsOwner] = useState(false);
@@ -44,6 +46,10 @@ export default function StudentProfile() {
              setProfile(profileData);
              setIsOwner(isProfileOwner);
              syncUserToRedux(profileData, isProfileOwner);
+    
+             if (profileData?.full_name?.trim().toLocaleLowerCase() !== name.trim().toLocaleLowerCase()) {
+              navigate(`/${profileData.full_name}/${id}/profile`, { replace: true });
+             }
          
            } catch (err) {
              setError("Failed to load profile. Please try again later.\n" + err.message);

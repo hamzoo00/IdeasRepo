@@ -53,6 +53,7 @@ const [error, setError] = React.useState(null);
      const adminId = response.data.admin.id;
      localStorage.setItem("admin", JSON.stringify(response.data.admin));
      localStorage.setItem("auth_token", response.data.auth_token);
+     localStorage.setItem('last_active_time', Date.now().toString());
      navigate(`/${adminId}/admin/profile`)
          
      } else {
@@ -68,6 +69,7 @@ const [error, setError] = React.useState(null);
       const teacherName = response.data.teacher.full_name;
      localStorage.setItem("teacher", JSON.stringify(response.data.teacher));
      localStorage.setItem("auth_token", response.data.auth_token);
+     localStorage.setItem('last_active_time', Date.now().toString());
      navigate(`/${teacherName}/${teacherId}/teacher/profile`);
          
      } } catch (error) {

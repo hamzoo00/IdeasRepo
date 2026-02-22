@@ -14,6 +14,7 @@ const authSlice = createSlice({
     clearUser: (state) => {
       state.user = null;
       localStorage.removeItem('auth_token');
+      localStorage.removeItem('last_active_time');
       localStorage.removeItem('persist:root');
       localStorage.removeItem('student');
       localStorage.removeItem('teacher');

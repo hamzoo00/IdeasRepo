@@ -52,6 +52,7 @@ const [error, setError] = React.useState(null);
      const studentName = response.data.student.full_name;
      localStorage.setItem("student", JSON.stringify(response.data.student));
      localStorage.setItem("auth_token", response.data.auth_token);
+     localStorage.setItem('last_active_time', Date.now().toString());
      navigate(`/${studentName}/${studentId}/profile`)
          
      } catch (error) {

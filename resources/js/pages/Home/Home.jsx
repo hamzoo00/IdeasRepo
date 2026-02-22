@@ -15,6 +15,9 @@ import {
 import { Close as CloseIcon } from '@mui/icons-material';
 import { useSearchParams } from 'react-router-dom';
 import api from '../../components/axios'; 
+import { useNavigate } from 'react-router-dom';
+
+
 
 const Colors = {
   darkest: "#03045E",
@@ -34,10 +37,13 @@ const Colors = {
 export default function Home() {
 
     const {id , name} = useParams();
+    const navigate = useNavigate();
+
     const profileImage = useSelector((state) => state.auth.user.image); 
     const profileType = useSelector((state) => state.auth.user.type);
     const isOwner = useSelector((state) => state.auth.user.is_owner);
     const logInUserId = useSelector((state) => state.auth.user.id);
+    const logInUserName = useSelector((state) => state.auth.user.full_name);
 
     const [ideas, setIdeas] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -61,8 +67,16 @@ export default function Home() {
     };
 
     useEffect(() => {
+// Restrict log in user to access only their own feed page also if someone else tries
+// to access there feed page the will be directed to login one
+
+     if (logInUserId && logInUserId.toString() !== id) {
+            navigate(`/${logInUserName}/${logInUserId}/home`, { replace: true });
+            return; 
+     }
+       
         fetchFeed();
-    }, []);
+    }, [id, logInUserId]);
 
     const handleOpenIdeaModal = (idea) => {
         setSearchParams({ idea: idea.id }); 
@@ -79,7 +93,7 @@ export default function Home() {
     return (
         <>
           <Header id={id} name={name} profileImage={profileImage} profileType={profileType}/>
-          {isOwner ?? <PostIdea />}
+          {isOwner && <PostIdea />}
           
           <Container maxWidth="md" sx={{ mt: 4, mb: 8 }}>
             

@@ -9,20 +9,31 @@ import TeacherProfile from '../pages/Profiles/TeacherProfile';
 import AdminProfile from '../pages/Profiles/AdminProfile';
 import Home from '../pages/Home/Home';
 import ContactUs from '../pages/ContactUs/ContactUs';
+import ProtectedRoute from './ProtectedRoute';
+import SessionManager from './SessionManager';
 
 
 export default function App() {
     return (
        
-        <Routes>
+        <SessionManager> 
+         <Routes>
+           
             <Route path="/" element={<SignIn />} />
             <Route path="/teacherSignIn" element={<TeacherSignIn />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/:name/:id/profile" element={<StudentProfile />} />
             <Route path="/:name/:id/teacher/profile" element={<TeacherProfile />} />
             <Route path="/:id/admin/profile" element={<AdminProfile />} />
-            <Route path="/:name/:id/home" element={<Home />} />
             <Route path="/contactUs" element={<ContactUs />} />
-        </Routes>
+
+             <Route path="/:name/:id/home" element={
+                <ProtectedRoute>
+                    <Home />
+                </ProtectedRoute>
+             } />
+        
+         </Routes>
+        </SessionManager>
     );
 }

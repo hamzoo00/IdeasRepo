@@ -34,6 +34,7 @@ import {
   Verified as VerifiedIcon,
 } from "@mui/icons-material";
 import api from "../../axios"; 
+import { useNavigate } from "react-router-dom";
 
 const Colors = {
   darkest: "#03045E",
@@ -55,6 +56,7 @@ const parseList = (str) => {
 
 export default function UpperProfileSection({ profile, isOwner, onUpdate }) {
 
+  const navigate = useNavigate();
   const [teacherProfile, setTeacherProfile] = useState(profile);
   const [isEditing, setIsEditing] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
@@ -174,6 +176,7 @@ export default function UpperProfileSection({ profile, isOwner, onUpdate }) {
 
       setIsEditing(false);
       alert("Profile updated successfully!");
+      navigate(`/${freshUser.full_name}/${freshUser.id}/teacher/profile`);
     
     } catch (err) {
       console.error("Update failed", err);

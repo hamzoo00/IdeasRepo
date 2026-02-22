@@ -32,6 +32,7 @@ import {
 import api from "../axios"; 
 import ErrorMessage from "../ErrorMessage";
 import { set } from "date-fns";
+import { useNavigate } from "react-router-dom";
 
 const Colors = {
   darkest: "#03045E",
@@ -52,6 +53,7 @@ const parseInterests = (interestString) => {
 
 export default function UpperProfileSection({ profile, isOwner, onUpdate }) {
 
+  const navigate = useNavigate();
   const [studentProfile, setStudentProfile] = useState(profile);
   const [isEditing, setIsEditing] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
@@ -154,6 +156,7 @@ export default function UpperProfileSection({ profile, isOwner, onUpdate }) {
       onUpdate(freshUser);
       setIsEditing(false);
       alert("Profile updated successfully!");
+      navigate(`/${freshUser.full_name}/${freshUser.id}/profile`);
      
     } catch (err) {
       console.error("Update failed", err);

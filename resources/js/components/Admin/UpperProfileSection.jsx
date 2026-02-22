@@ -131,7 +131,6 @@ export default function UpperProfileSection({ profile, isOwner, onUpdate }) {
     setServerError("");
     const dataToSend = new FormData();
 
-    
     dataToSend.append("full_name", data.full_name);
     dataToSend.append("email", data.email);
     dataToSend.append("whatsapp", data.whatsapp || "");
@@ -143,7 +142,6 @@ export default function UpperProfileSection({ profile, isOwner, onUpdate }) {
     if (data.image instanceof File) {
       dataToSend.append("image", data.image);
     }
-
     dataToSend.append("_method", "PUT");
 
     try {

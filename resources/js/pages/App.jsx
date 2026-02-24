@@ -19,14 +19,31 @@ export default function App() {
         <SessionManager> 
          <Routes>
            
+           {/* Public Routes */}
             <Route path="/" element={<SignIn />} />
             <Route path="/teacherSignIn" element={<TeacherSignIn />} />
             <Route path="/signup" element={<SignUp />} />
-            <Route path="/:name/:id/profile" element={<StudentProfile />} />
-            <Route path="/:name/:id/teacher/profile" element={<TeacherProfile />} />
-            <Route path="/:id/admin/profile" element={<AdminProfile />} />
             <Route path="/contactUs" element={<ContactUs />} />
 
+            {/* Protected Routes */}
+            <Route path="/:name/:id/profile" element={
+                <ProtectedRoute>
+                   <StudentProfile />
+                </ProtectedRoute> 
+            }
+            />
+            <Route path="/:name/:id/teacher/profile" element={
+                <ProtectedRoute>
+                   <TeacherProfile />
+                </ProtectedRoute> 
+            } 
+            />
+            <Route path="/:id/admin/profile" element={
+                <ProtectedRoute>
+                   <AdminProfile />
+                </ProtectedRoute> 
+            }
+            />    
              <Route path="/:name/:id/home" element={
                 <ProtectedRoute>
                     <Home />

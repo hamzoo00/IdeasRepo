@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Card,
   CardHeader,
@@ -37,12 +38,11 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   RestoreFromTrash as RestoreIcon,       
-  DeleteForever as DeleteForeverIcon    
+  DeleteForever as DeleteForeverIcon,
+  Share as ShareIcon
 } from '@mui/icons-material';
 import { formatDistanceToNow } from 'date-fns';
-import api from '../axios';
-
-
+import api from './axios';
 
 const Colors = {
   darkest: "#03045E",
@@ -56,7 +56,9 @@ const Colors = {
   lightest: "#CAF0F8",
 };
 
-export default function IdeaCard({ idea, isOwner, refreshIdeas, isTrashMode }) {
+export default function IdeaCard({ idea, isOwner, refreshIdeas, isTrashMode, onCardClick }) {
+  const navigate = useNavigate();
+  
   const [expanded, setExpanded] = useState(false);
   const [editing, setEditing] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
@@ -78,8 +80,9 @@ export default function IdeaCard({ idea, isOwner, refreshIdeas, isTrashMode }) {
     tags: idea.tags ? idea.tags.map(t => t.name) : []
   });
 
-  //Get User Image & Name 
+  // Get User Image & Name 
   const authorName = idea.author?.full_name || idea.author?.name || "Unknown User";
+
   
   const getProfileImage = () => {
       const imgPath = idea.author?.image;
@@ -109,10 +112,17 @@ export default function IdeaCard({ idea, isOwner, refreshIdeas, isTrashMode }) {
   };
 
   // Handlers 
-  const handleMenuOpen = (event) => setAnchorEl(event.currentTarget);
-  const handleMenuClose = () => setAnchorEl(null);
+  const handleMenuOpen = (event) => {
+      event.stopPropagation();
+      setAnchorEl(event.currentTarget);
+  };
+  const handleMenuClose = (event) => {
+      if(event) event.stopPropagation();
+      setAnchorEl(null);
+  };
 
-  const handleDelete = async () => {
+  const handleDelete = async (e) => {
+    e.stopPropagation();
     const message = isTrashMode 
         ? "This will PERMANENTLY delete this idea. It cannot be recovered. Continue?" 
         : "Are you sure you want to delete this idea?";
@@ -128,7 +138,8 @@ export default function IdeaCard({ idea, isOwner, refreshIdeas, isTrashMode }) {
     handleMenuClose();
   };
 
-  const handleRestore = async () => {
+  const handleRestore = async (e) => {
+    e.stopPropagation();
     if (window.confirm("Restore this idea back to your posts?")) {
         try {
             await api.put(`/ideas/${idea.id}/restore`);
@@ -161,16 +172,40 @@ export default function IdeaCard({ idea, isOwner, refreshIdeas, isTrashMode }) {
       setEditing(false);
       setPreviewState('idle');
   };
-  
+
+const handleShare = async (e) => {
+  e.stopPropagation();
+
+  const shareLink = `${window.location.origin}${window.location.pathname}?idea=${idea.id}`;
+
+  // Modern API – works only in secure context (https or localhost)
+  if (navigator.clipboard && window.isSecureContext) {
+    try {
+      await navigator.clipboard.writeText(shareLink);
+      alert("Link copied to clipboard!");
+    } catch (err) {
+      console.error("navigator.clipboard.writeText failed:", err);
+      // Manual fallback
+      window.prompt("Copy this link:", shareLink);
+    }
+  } else {
+    window.prompt("Copy this link:", shareLink);
+  }
+
+  handleMenuClose();
+};
 
   const renderMenuItems = () => {
     // 1. Visitor View (Not Owner)
     if (!isOwner) {
-      return (
-        <MenuItem onClick={() => { setReportOpen(true); handleMenuClose(); }} sx={{ gap: 1 }}>
+      return [
+        <MenuItem key="share" onClick={handleShare} sx={{ gap: 1 }}>
+            <ShareIcon fontSize="small" /> Share Link
+        </MenuItem>,
+        <MenuItem key="report" onClick={(e) => { e.stopPropagation(); setReportOpen(true); handleMenuClose(); }} sx={{ gap: 1 }}>
             <FlagIcon fontSize="small" /> Report
         </MenuItem>
-      );
+      ];
     }
 
     // 2. Owner - Trash Mode (Restore / Delete Forever)
@@ -180,14 +215,17 @@ export default function IdeaCard({ idea, isOwner, refreshIdeas, isTrashMode }) {
             <RestoreIcon fontSize="small" /> Restore
         </MenuItem>,
         <MenuItem key="delete" onClick={handleDelete} sx={{ color: 'error.main', gap: 1 }}>
-            <DeleteForeverIcon fontSize="small" /> Permanantly Delete
+            <DeleteForeverIcon fontSize="small" /> Permanently Delete
         </MenuItem>
       ];
     }
 
     // 3. Owner - Normal Mode (Edit / Soft Delete)
     return [
-      <MenuItem key="edit" onClick={() => { setEditing(true); handleMenuClose(); }} sx={{ gap: 1 }}>
+      <MenuItem key="share" onClick={handleShare} sx={{ gap: 1 }}>
+          <ShareIcon fontSize="small" /> Share Link
+      </MenuItem>,
+      <MenuItem key="edit" onClick={(e) => { e.stopPropagation(); setEditing(true); handleMenuClose(); }} sx={{ gap: 1 }}>
           <EditIcon fontSize="small" /> Edit
       </MenuItem>,
       <MenuItem key="delete" onClick={handleDelete} sx={{ color: 'error.main', gap: 1 }}>
@@ -196,7 +234,7 @@ export default function IdeaCard({ idea, isOwner, refreshIdeas, isTrashMode }) {
     ];
   };
 
-  //RENDER: Edit Mode
+  // RENDER: Edit Mode
   if (editing) {
     return (
       <Card sx={{ mb: 3, borderRadius: 4, boxShadow: "0px 4px 20px rgba(0,0,0,0.1)", overflow: 'visible' }}>
@@ -206,16 +244,18 @@ export default function IdeaCard({ idea, isOwner, refreshIdeas, isTrashMode }) {
         
         <CardContent sx={{ p: 3 }}>
             <Stack spacing={3}>
-              {/* status and title on top row, tags below, then summary and description */}
                 <TextField fullWidth label="Title" value={editData.title} onChange={(e) => setEditData({...editData, title: e.target.value})} />
-                  <FormControl fullWidth>
-                  <InputLabel id="status-select-label">Status</InputLabel>
+                
+                {/* Status Dropdown */}
+                <FormControl fullWidth>
+                  <InputLabel id={`status-label-${idea.id}`}>Status</InputLabel>
                   <Select
-                    labelId="status-select-label"
+                    labelId={`status-label-${idea.id}`}
                     value={editData.status}
                     label="Status"
                     onChange={(e) => setEditData({ ...editData, status: e.target.value })}
                   >
+                    <MenuItem value="Idea">Idea</MenuItem>
                     <MenuItem value="In Progress">In Progress</MenuItem>
                     <MenuItem value="Completed">Completed</MenuItem>
                     <MenuItem value="Abandoned">Abandoned</MenuItem>
@@ -259,7 +299,7 @@ export default function IdeaCard({ idea, isOwner, refreshIdeas, isTrashMode }) {
     );
   }
 
-  //RENDER: Normal View
+  // RENDER: Normal View
   return (
     <>
       <Card 
@@ -272,10 +312,21 @@ export default function IdeaCard({ idea, isOwner, refreshIdeas, isTrashMode }) {
             "&:hover": { boxShadow: "0px 8px 25px rgba(0, 180, 216, 0.2)" } 
         }}
       >
+        {/* --- CARD HEADER --- */}
         <CardHeader
           sx={{ pb: 1 }}
           avatar={
-            <Avatar src={getProfileImage()} alt={authorName} sx={{ bgcolor: Colors.primary, width: 48, height: 48, border: `2px solid ${Colors.lighter}` }}>
+            <Avatar 
+              src={getProfileImage()} 
+              alt={authorName} 
+              onClick={(e) => {
+                  e.stopPropagation(); // Prevents the card click event from firing
+                  // Safely determine type based on backend string
+                  const type = idea.author_type?.toLowerCase().includes('teacher') ? 'teacher' : 'student';
+                  navigate(type === 'student' ? `/${authorName}/${idea.author_id}/profile`: `/${authorName}/${idea.author_id}/teacher/profile`);
+              }}
+              sx={{ bgcolor: Colors.primary, width: 48, height: 48, border: `2px solid ${Colors.lighter}`, cursor: 'pointer' }}
+            >
               {!getProfileImage() && authorName.charAt(0).toUpperCase()}
             </Avatar>
           }
@@ -293,12 +344,15 @@ export default function IdeaCard({ idea, isOwner, refreshIdeas, isTrashMode }) {
           }
         />
 
-        <CardContent sx={{ pt: 1, pb: 1 }}>
-          <Box onClick={() => setExpanded(!expanded)} sx={{ cursor: 'pointer' }}>
+        <CardContent 
+            sx={{ pt: 1, pb: 1, cursor: 'pointer' }}
+            onClick={() => onCardClick ? onCardClick(idea) : setExpanded(!expanded)}
+        >
+          <Box>
               <Typography variant="h6" fontWeight="bold" sx={{ color: Colors.darker, mb: 1 }}>{idea.title}</Typography>
               <Box sx={{ mb: 2 }}>
                 {idea.tags && idea.tags.map((tag) => (
-                   <Chip key={tag.id} label={tag.name} size="small" sx={{ mr: 0.5, mb: 0.5, bgcolor: Colors.lightest, color: Colors.darker, fontWeight: 500 }} />
+                   <Chip key={tag.id || tag.name} label={tag.name} size="small" sx={{ mr: 0.5, mb: 0.5, bgcolor: Colors.lightest, color: Colors.darker, fontWeight: 500 }} />
                 ))}
               </Box>
               <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6 }}>{idea.summary}</Typography>
@@ -329,7 +383,6 @@ export default function IdeaCard({ idea, isOwner, refreshIdeas, isTrashMode }) {
         </CardActions>
       </Card>
 
-      {/*  DYNAMIC MENU LOGIC  */}
       <Menu 
         anchorEl={anchorEl} 
         open={Boolean(anchorEl)} 
@@ -339,8 +392,8 @@ export default function IdeaCard({ idea, isOwner, refreshIdeas, isTrashMode }) {
         {renderMenuItems()}
       </Menu>
 
-      {/* Report Dialog (Same as before) */}
-      <Dialog open={reportOpen} onClose={() => setReportOpen(false)} PaperProps={{ sx: { borderRadius: 3 } }}>
+      {/* Report Dialog */}
+      <Dialog open={reportOpen} onClose={() => setReportOpen(false)} PaperProps={{ sx: { borderRadius: 3 } }} onClick={(e) => e.stopPropagation()}>
          <DialogTitle sx={{ bgcolor: Colors.lightest, color: Colors.darkest }}>Report Idea</DialogTitle>
          <DialogContent sx={{ minWidth: 350, mt: 2 }}>
              <FormControl fullWidth sx={{ mt: 1, mb: 2 }}>

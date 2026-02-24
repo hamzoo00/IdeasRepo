@@ -50,11 +50,18 @@ const [error, setError] = React.useState(null);
 
      const studentId = response.data.student.id;
      const studentName = response.data.student.full_name;
-     localStorage.setItem("student", JSON.stringify(response.data.student));
-     localStorage.setItem("auth_token", response.data.auth_token);
+     sessionStorage.setItem("student",  JSON.stringify(response.data.student));
+     sessionStorage.setItem("auth_token", response.data.auth_token);
      localStorage.setItem('last_active_time', Date.now().toString());
-     navigate(`/${studentName}/${studentId}/profile`)
-         
+     
+     const redirectUrl = sessionStorage.getItem('redirect_after_login');
+    
+      if (redirectUrl) {
+          sessionStorage.removeItem('redirect_after_login'); 
+          navigate(redirectUrl);
+      } else {
+       navigate(`/${studentName}/${studentId}/profile`)
+      }  
      } catch (error) {
        setError("Login failed. Please check your credentials and try again.\n" + error.message);
     }

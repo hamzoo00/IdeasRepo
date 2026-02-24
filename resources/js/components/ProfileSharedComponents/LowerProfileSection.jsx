@@ -8,15 +8,18 @@ import {
   Divider,
   IconButton,
   Tooltip,
+  Dialog,
   Badge
 } from '@mui/material';
 import SentimentDissatisfiedIcon from '@mui/icons-material/SentimentDissatisfied';
-import DeleteIcon from '@mui/icons-material/Delete';
+import { Close as CloseIcon } from '@mui/icons-material';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'; // Inactive Trash Icon
 import AutoDeleteIcon from '@mui/icons-material/AutoDelete'; // Restore Icon for empty state
 import api from '../axios'; 
-import IdeaCard from './IdeaCard';
+// import IdeaCard from './IdeaCard';
 import ErrorMessage from '../ErrorMessage';
+import IdeaCard from '../IdeaCard'
+import { useSearchParams } from 'react-router-dom';
 
 
 const Colors = {
@@ -35,7 +38,10 @@ export default function LowerProfileSection({ isOwner, viewedUserId, viewedUserT
 
   const [ideas, setIdeas] = useState([]);
   const [loading, setLoading] = useState(true);
-   const [error, setError] = useState(null);
+  const [error, setError] = useState(null);
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedIdeaId = searchParams.get('idea');
   
   // STATE: 'active' or 'trash' also count of trashed ideas
   const [viewMode, setViewMode] = useState('active'); 
@@ -51,7 +57,6 @@ export default function LowerProfileSection({ isOwner, viewedUserId, viewedUserT
       if (isOwner && viewMode === 'trash') {
           endpoint = `/my-trash-ideas?view=trash`;
       }
-
       const response = await api.get(endpoint);
       setIdeas(response.data);
 
@@ -70,6 +75,16 @@ export default function LowerProfileSection({ isOwner, viewedUserId, viewedUserT
   useEffect(() => {
     fetchIdeas();
   }, [viewedUserId, viewedUserType, viewMode]); // Refetch when mode changes
+
+     const handleOpenIdeaModal = (idea) => {
+        setSearchParams({ idea: idea.id }); 
+    };
+
+    const handleCloseModal = () => {
+        setSearchParams({}); 
+    };
+
+     const activeIdea = selectedIdeaId ? ideas.find(i => i.id.toString() === selectedIdeaId) : null;
 
   return (
     <>
@@ -154,19 +169,66 @@ export default function LowerProfileSection({ isOwner, viewedUserId, viewedUserT
                     </Typography>
                 </Box>
               ) : (
-                <Box>
-                  {ideas.map((idea) => (
-                    <IdeaCard 
-                      key={idea.id} 
-                      idea={idea} 
-                      isOwner={isOwner}
-                      refreshIdeas={fetchIdeas}
-                      // Pass the mode to the card so it knows which buttons to show
-                      isTrashMode={viewMode === 'trash'} 
-                    />
-                  ))}
-                </Box>
+                  <Box>
+                      {ideas.map((idea) => {               
+  
+                          return (
+                              <IdeaCard
+                                  key={idea.id} 
+                                  idea={idea} 
+                                  isOwner={isOwner} 
+                                  refreshIdeas={fetchIdeas} 
+                                  isTrashMode={false} 
+                                  onCardClick={handleOpenIdeaModal} 
+                              />
+                          );
+                      })}
+                  </Box>
               )}
+  
+              {/* --- THE MODAL --- */}
+              <Dialog 
+                  open={!!selectedIdeaId} 
+                  onClose={handleCloseModal}
+                  maxWidth="md"
+                  fullWidth
+                  PaperProps={{
+                      sx: { borderRadius: 3, bgcolor: '#f8f9fa', overflow: 'visible' }
+                  }}
+              >
+                  {activeIdea && (
+                      <Box sx={{ position: 'relative' }}>
+                          {/* Floating Close Button */}
+                          <IconButton 
+                              onClick={handleCloseModal} 
+                              sx={{ 
+                                  position: 'absolute', 
+                                  right: -12, 
+                                  top: -12, 
+                                  zIndex: 10,
+                                  bgcolor: 'white',
+                                  boxShadow: 2,
+                                  "&:hover": { bgcolor: '#f0f0f0' }
+                              }}
+                          >
+                              <CloseIcon fontSize="small" />
+                          </IconButton>
+  
+                          <Box sx={{ p: { xs: 1, sm: 3 } }}>
+                              {/* We reuse the IdeaCard! 
+                                  Notice I OMIT 'onCardClick' here so it defaults 
+                                  to the expand/collapse behavior instead of trying to open the modal again.
+                              */}
+                              <IdeaCard 
+                                  idea={activeIdea} 
+                                  isOwner={isOwner}
+                                  refreshIdeas={fetchIdeas}
+                                  isTrashMode={false}
+                              />
+                          </Box>
+                      </Box>
+                  )}
+              </Dialog>
             </Box>
           )}
 

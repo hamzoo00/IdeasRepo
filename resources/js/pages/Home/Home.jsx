@@ -2,7 +2,7 @@ import {useParams} from 'react-router-dom';
 import Header from '../../components/Header';
 import { useSelector } from 'react-redux';
 import PostIdea from  '../../components/PostIdea';
-import AdvanceIdeaCard from '../../components/HomeSharedComponents/AdvanceIdeaCard';
+import IdeaCard from '../../components/IdeaCard';
 import React, { useState, useEffect } from 'react';
 import { 
     Container, 
@@ -16,6 +16,7 @@ import { Close as CloseIcon } from '@mui/icons-material';
 import { useSearchParams } from 'react-router-dom';
 import api from '../../components/axios'; 
 import { useNavigate } from 'react-router-dom';
+import echo from '../../components/echo';
 
 
 
@@ -67,14 +68,43 @@ export default function Home() {
     };
 
     useEffect(() => {
-// Restrict log in user to access only their own feed page also if someone else tries
-// to access there feed page the will be directed to login one
+     //  Restrict log in user to access only their own feed page also if someone else tries
+     // to access there feed page the will be directed to login one
 
      if (logInUserId && logInUserId.toString() !== id) {
             navigate(`/${logInUserName}/${logInUserId}/home`, { replace: true });
             return; 
      }
+
         fetchFeed();
+
+    // Listen to the real-time 'feed' channel
+        const channel = echo.channel('public-feed');
+
+        // Event: Someone posted a new idea
+        channel.listen('.IdeaCreated', (e) => {
+            // Add the new idea to the TOP of the array seamlessly
+            setIdeas(prevIdeas => [e.idea, ...prevIdeas]);
+        });
+
+        // Event: Someone edited their idea
+        channel.listen('.IdeaUpdated', (e) => {
+            // Find the idea and replace it with the fresh data
+            setIdeas(prevIdeas => prevIdeas.map(idea => 
+                idea.id === e.idea.id ? e.idea : idea
+            ));
+        });
+
+        // Event: Someone (or an admin) deleted an idea
+        channel.listen('.IdeaDeleted', (e) => {
+            // Filter it out of the array silently
+            setIdeas(prevIdeas => prevIdeas.filter(idea => idea.id !== e.ideaId));
+        });
+
+        // Cleanup the listener when the user leaves the page
+        return () => {
+            echo.leaveChannel('public-feed');
+        };
     }, [id, logInUserId]);
 
     const handleOpenIdeaModal = (idea) => {
@@ -130,7 +160,7 @@ export default function Home() {
                                       
 
                         return (
-                            <AdvanceIdeaCard
+                            <IdeaCard
                                 key={idea.id} 
                                 idea={idea} 
                                 isOwner={ideaIsOwner} 
@@ -176,7 +206,7 @@ export default function Home() {
                                 Notice I OMIT 'onCardClick' here so it defaults 
                                 to the expand/collapse behavior instead of trying to open the modal again.
                             */}
-                            <AdvanceIdeaCard 
+                            <IdeaCard 
                                 idea={activeIdea} 
                                 isOwner={logInUserId?.id === activeIdea.author_id && activeIdea.author_type?.toLowerCase().includes(profileType.toLowerCase())}
                                 refreshIdeas={fetchFeed}

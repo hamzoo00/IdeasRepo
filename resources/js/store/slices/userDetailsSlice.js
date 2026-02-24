@@ -12,13 +12,13 @@ const authSlice = createSlice({
     },
    
     clearUser: (state) => {
+      sessionStorage.removeItem(state.user?.type);
       state.user = null;
-      localStorage.removeItem('auth_token');
+      sessionStorage.removeItem('auth_token');
       localStorage.removeItem('last_active_time');
-      localStorage.removeItem('persist:root');
-      localStorage.removeItem('student');
-      localStorage.removeItem('teacher');
-      localStorage.removeItem('admin');
+      sessionStorage.removeItem('persist:root');
+    
+   
     },
 
   },

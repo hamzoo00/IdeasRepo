@@ -51,10 +51,18 @@ const [error, setError] = React.useState(null);
           
      const response = await api.post('/admin/login', payload );
      const adminId = response.data.admin.id;
-     localStorage.setItem("admin", JSON.stringify(response.data.admin));
-     localStorage.setItem("auth_token", response.data.auth_token);
+     sessionStorage.setItem("admin" , JSON.stringify(response.data.admin));
+     sessionStorage.setItem("auth_token", response.data.auth_token);
      localStorage.setItem('last_active_time', Date.now().toString());
-     navigate(`/${adminId}/admin/profile`)
+     
+     const redirectUrl = sessionStorage.getItem('redirect_after_login');
+    
+      if (redirectUrl) {
+          sessionStorage.removeItem('redirect_after_login'); 
+          navigate(redirectUrl);
+      } else {
+       navigate(`/${adminId}/admin/profile`)
+      }  
          
      } else {
         
@@ -67,10 +75,18 @@ const [error, setError] = React.useState(null);
 
      const teacherId = response.data.teacher.id;
       const teacherName = response.data.teacher.full_name;
-     localStorage.setItem("teacher", JSON.stringify(response.data.teacher));
-     localStorage.setItem("auth_token", response.data.auth_token);
+     sessionStorage.setItem("teacher", JSON.stringify(response.data.teacher));
+     sessionStorage.setItem("auth_token", response.data.auth_token);
      localStorage.setItem('last_active_time', Date.now().toString());
-     navigate(`/${teacherName}/${teacherId}/teacher/profile`);
+   
+     const redirectUrl = sessionStorage.getItem('redirect_after_login');
+    
+      if (redirectUrl) {
+          sessionStorage.removeItem('redirect_after_login'); 
+          navigate(redirectUrl);
+      } else {
+       navigate(`/${teacherName}/${teacherId}/teacher/profile`)
+      }  
          
      } } catch (error) {
       setError("Login failed. Please check your credentials and try again.\n" + error.message);

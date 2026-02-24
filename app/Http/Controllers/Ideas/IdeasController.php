@@ -72,13 +72,8 @@ class IdeasController extends Controller
         return response()->json([
             'message' => 'Idea posted successfully!',
             'idea' => $idea->load('tags')
-        ], 201);
-    
-
-    
+        ], 201);    
     }
-
-
 
     public function getProfileIdeas($type, $id)
     {

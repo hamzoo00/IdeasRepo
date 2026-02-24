@@ -20,6 +20,7 @@ class AdminProfileController extends Controller
 
       $data = [
         // Data from 'admins' table
+        'id'        => $admin->id,
         'full_name' => $admin->full_name,
         'email'     => $admin->email,
 

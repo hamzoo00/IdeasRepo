@@ -10,6 +10,7 @@ import LowerProfileSection from '../../components/ProfileSharedComponents/LowerP
 import { useDispatch } from 'react-redux';
 import { setUser} from '../../store/slices/userDetailsSlice';
 import { useNavigate } from 'react-router-dom';
+import LoadingScreen from '../../components/LoadingScreen';
 
 
 export default function TeacherProfile() {
@@ -34,6 +35,7 @@ export default function TeacherProfile() {
         is_owner: true,
       }));
     }
+    console.log(latestProfileData.id);
   };
    
 
@@ -74,8 +76,8 @@ export default function TeacherProfile() {
        };
 
     
-       if (loading) return <div>Loading...</div>;
-       if (!profile) return <div>Profile not found</div>;
+       if (loading) return <LoadingScreen message="Loading profile..." />;
+       if (!profile) return <LoadingScreen message="Profile not found." />;
     
     return <>
         <Header id={id} name={name} profileImage={profile?.image} profileType="teacher" />

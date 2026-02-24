@@ -9,6 +9,7 @@ import ErrorMessage from  '../../components/ErrorMessage';
 import { useDispatch } from 'react-redux';
 import { setUser} from '../../store/slices/userDetailsSlice';
 import { useNavigate } from 'react-router-dom';
+import LoadingScreen from '../../components/LoadingScreen';
 
 export default function StudentProfile() {
 
@@ -76,8 +77,8 @@ export default function StudentProfile() {
   };
 
 
-       if (loading) return <div>Loading...</div>;
-       if (!profile) return <div>Profile not found</div>;
+       if (loading) return <LoadingScreen message="Loading profile..." />;
+       if (!profile) return <LoadingScreen message="Profile not found." />;
 
     return ( 
     <>

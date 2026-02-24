@@ -83,8 +83,13 @@ export default function Home() {
 
         // Event: Someone posted a new idea
         channel.listen('.IdeaCreated', (e) => {
-            // Add the new idea to the TOP of the array seamlessly
-            setIdeas(prevIdeas => [e.idea, ...prevIdeas]);
+    
+         const newIdea = {
+        ...e.idea,
+        // Manually check if the ID matches the logged-in user from the broadcasting payload
+        is_owner: logInUserId && (e.idea.author_id === logInUserId) 
+    };
+            setIdeas(prevIdeas => [newIdea, ...prevIdeas]);
         });
 
         // Event: Someone edited their idea
@@ -157,7 +162,7 @@ export default function Home() {
                         //    contains the Redux user type (e.g. "student")
                         const ideaIsOwner = logInUserId === idea.author_id && 
                                       idea.author_type?.toLowerCase().includes(profileType.toLowerCase());
-                                      
+                 
 
                         return (
                             <IdeaCard

@@ -20,6 +20,7 @@ class TeacherProfileController extends Controller
 
       $data = [
         // Data from 'teachers' table
+        'id'        => $teacher->id,
         'full_name' => $teacher->full_name, 
         'email'     => $teacher->email,
 

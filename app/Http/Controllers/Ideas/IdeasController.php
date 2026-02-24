@@ -9,6 +9,7 @@ use App\Models\Auth\Student;
 use App\Models\Ideas\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Events\IdeaCreated;
 
 class IdeasController extends Controller
 {
@@ -61,6 +62,9 @@ class IdeasController extends Controller
             'tech_stack' => $validated['tech_stack'] ?? null,
         ]);
 
+        // new process added for websocket broadcasting
+        event(new IdeaCreated($idea));
+
         // 4. Process Tags
         $tagIds = [];
         foreach ($validated['tags'] as $tagName) {
@@ -70,6 +74,7 @@ class IdeasController extends Controller
 
         // 5. Attach Tags to Idea (Populate Pivot Table)
         $idea->tags()->sync($tagIds);
+
 
         return response()->json([
             'message' => 'Idea posted successfully!',

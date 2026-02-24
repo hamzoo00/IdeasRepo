@@ -32,6 +32,7 @@ import {
   MoreVert as MoreVertIcon,
   Visibility as PreviewIcon,
   CloudUpload as UploadIcon,
+  Verified as VerifiedIcon,
   ExpandMore as ExpandMoreIcon,
   Code as CodeIcon,
   Flag as FlagIcon,
@@ -83,6 +84,9 @@ export default function IdeaCard({ idea, isOwner, refreshIdeas, isTrashMode, onC
   // Get User Image & Name 
   const authorName = idea.author?.full_name || idea.author?.name || "Unknown User";
 
+
+  const isTeacher = idea.author_type?.toLowerCase().includes('teacher');
+console.log(isTeacher)
   
   const getProfileImage = () => {
       const imgPath = idea.author?.profile_image ;
@@ -173,7 +177,7 @@ export default function IdeaCard({ idea, isOwner, refreshIdeas, isTrashMode, onC
       setPreviewState('idle');
   };
 
-const handleShare = async (e) => {
+  const handleShare = async (e) => {
   e.stopPropagation();
 
   const shareLink = `${window.location.origin}${window.location.pathname}?idea=${idea.id}`;
@@ -328,14 +332,19 @@ const handleShare = async (e) => {
               sx={{ bgcolor: Colors.primary, width: 48, height: 48, border: `2px solid ${Colors.lighter}`, cursor: 'pointer' }}
             >
               {!getProfileImage() && authorName.charAt(0).toUpperCase()}
+              
             </Avatar>
+            
           }
           action={
             <IconButton onClick={handleMenuOpen}>
               <MoreVertIcon color="action" />
             </IconButton>
           }
-          title={<Typography variant="subtitle1" fontWeight="bold" color={Colors.darkest}>{authorName}</Typography>}
+          title={
+          <Typography variant="subtitle1" fontWeight="bold" color={Colors.darkest}>{authorName}
+          {isTeacher && <VerifiedIcon sx={{ fontSize: 16, ml: 0.5, color: Colors.mediumDark }} />}
+          </Typography>}
           subheader={
             <Typography variant="caption" color="text.secondary">
               {formatDistanceToNow(new Date(idea.created_at), { addSuffix: true })}
@@ -343,7 +352,8 @@ const handleShare = async (e) => {
             </Typography>
           }
         />
-
+        
+      {/* Idea Title, Summary, Tags */}
         <CardContent 
             sx={{ pt: 1, pb: 1, cursor: 'pointer' }}
             onClick={() => onCardClick ? onCardClick(idea) : setExpanded(!expanded)}
@@ -359,6 +369,7 @@ const handleShare = async (e) => {
           </Box>
         </CardContent>
 
+     {/* Expandable Detailed Description */}
         <Collapse in={expanded} timeout="auto" unmountOnExit>
           <Box sx={{ px: 2, pb: 2 }}>
              <Box sx={{ p: 2, bgcolor: "#FAFAFA", borderRadius: 2, border: `1px dashed ${Colors.lighter}` }}>
@@ -369,7 +380,8 @@ const handleShare = async (e) => {
         </Collapse>
 
         <Divider sx={{ mx: 2, borderColor: Colors.lighter }} />
-
+        
+     {/* Tech Stack & Status */}
         <CardActions sx={{ justifyContent: 'space-between', px: 3, py: 2 }}>
            <Stack direction="row" alignItems="center" spacing={1}>
                 <Tooltip title="Tech Stack"><CodeIcon fontSize="small" sx={{ color: Colors.mediumDark }} /></Tooltip>

@@ -33,15 +33,13 @@ class Student extends Authenticatable
    protected $hidden =['password'];
 
 
-   // This adds a fake attribute 'profile_url' to JSON response
-      protected $appends = ['profile_url'];
-      
-      public function getProfileUrlAttribute()
-      {
-          return $this->image
-              ? asset('storage/' . $this->image)
-              : null;
-      }
+   protected $appends = ['profile_image']; 
+
+    public function getProfileImageAttribute()
+    {
+     
+        return $this->image; 
+    }
 
       public function ideas()
      {

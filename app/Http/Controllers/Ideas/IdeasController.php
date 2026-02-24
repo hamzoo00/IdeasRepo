@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Ideas;
 
 use App\Http\Controllers\Controller;
 use App\Models\Ideas\Ideas;
+use App\Models\Auth\Teacher;
+use App\Models\Auth\Student;
 use App\Models\Ideas\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -93,6 +95,12 @@ class IdeasController extends Controller
         $ideas = Ideas::where('author_id', $id)
                      ->where('author_type', $modelClass)
                      ->with('tags', 'author')
+                     ->with(['author' => function ($query) {
+                             $query->morphWith([
+                                 Teacher::class => ['profile'], // Load profile if it's a Teacher
+                                 Student::class => [],          // Load nothing extra if it's a Student
+                             ]);
+                         }])
                      ->latest()
                      ->get();
 

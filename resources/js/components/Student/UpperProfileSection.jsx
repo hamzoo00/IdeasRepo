@@ -51,7 +51,7 @@ const parseInterests = (interestString) => {
   return interestString.split(",").map((item) => item.trim()).filter(i => i);
 };
 
-export default function UpperProfileSection({ profile, isOwner, onUpdate }) {
+export default function UpperProfileSection({ profile, isOwner, onUpdate, onUpdateSuccess }) {
 
   const navigate = useNavigate();
   const [studentProfile, setStudentProfile] = useState(profile);
@@ -154,6 +154,7 @@ export default function UpperProfileSection({ profile, isOwner, onUpdate }) {
       }));  
 
       onUpdate(freshUser);
+      onUpdateSuccess();
       setIsEditing(false);
       alert("Profile updated successfully!");
       navigate(`/${freshUser.full_name}/${freshUser.id}/profile`);

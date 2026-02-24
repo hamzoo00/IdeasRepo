@@ -41,7 +41,7 @@ const Colors = {
   errorBorder: "#FFCDD2"
 };
 
-export default function PostIdea() { 
+export default function PostIdea({onPostSuccess}) { 
 
   const [open, setOpen] = useState(false);
   const [previewState, setPreviewState] = useState("idle"); 
@@ -131,7 +131,11 @@ export default function PostIdea() {
       await api.post(endpoint, payload);
       alert("Idea posted successfully!"); 
       handleClose();
-      window.location.reload(); 
+      if (onPostSuccess && typeof onPostSuccess === 'function') {
+        console.log("Calling onPostSuccess callback...");
+          onPostSuccess(); 
+      } 
+    
     } catch (error) {
       setApiError(error.response?.data?.message || "Failed to post idea.");
     }
@@ -140,8 +144,6 @@ export default function PostIdea() {
   const countWords = (str) => {
     return str.trim().split(/\s+/).length;
   };
-
-  
 
   return (
     <>

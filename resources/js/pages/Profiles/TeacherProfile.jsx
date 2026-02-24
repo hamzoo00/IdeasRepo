@@ -21,6 +21,7 @@ export default function TeacherProfile() {
      const [isOwner, setIsOwner] = useState(false);
      const [loading, setLoading] = useState(true);
      const [error, setError] = useState(null);
+     const [feedRefreshTrigger, setFeedRefreshTrigger] = useState(0);
 
      
     const syncUserToRedux = (latestProfileData, ownerCheck) => {
@@ -67,15 +68,20 @@ export default function TeacherProfile() {
          setProfile(latestProfile); 
          syncUserToRedux(latestProfile, isOwner);
        };   
+
+       const handleFeedRefresh = () => {
+        setFeedRefreshTrigger(prev => prev + 1);
+       };
+
     
        if (loading) return <div>Loading...</div>;
        if (!profile) return <div>Profile not found</div>;
     
     return <>
         <Header id={id} name={name} profileImage={profile?.image} profileType="teacher" />
-        <UpperProfileSection profile={profile} isOwner={isOwner} onUpdate={handleProfileUpdate} />
-        {isOwner && <PostIdea author={'teacher'}/>}
-        <LowerProfileSection isOwner={isOwner} viewedUserId={id} viewedUserType="Teacher" />
+        <UpperProfileSection profile={profile} isOwner={isOwner} onUpdate={handleProfileUpdate} onUpdateSuccess={handleFeedRefresh}/>
+        {isOwner && <PostIdea onPostSuccess={handleFeedRefresh}/>}
+        <LowerProfileSection isOwner={isOwner} viewedUserId={id} viewedUserType="Teacher" refreshTrigger={feedRefreshTrigger}/>
 
         <ErrorMessage 
                error={error} 

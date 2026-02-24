@@ -20,6 +20,8 @@ export default function StudentProfile() {
     const [isOwner, setIsOwner] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [feedRefreshTrigger, setFeedRefreshTrigger] = useState(0);
+    
 
     const syncUserToRedux = (latestProfileData, ownerCheck) => {
     if (ownerCheck) {
@@ -69,15 +71,20 @@ export default function StudentProfile() {
        
        };
 
+    const handleFeedRefresh = () => {
+     setFeedRefreshTrigger(prev => prev + 1);
+  };
+
+
        if (loading) return <div>Loading...</div>;
        if (!profile) return <div>Profile not found</div>;
 
     return ( 
     <>
             <Header id={id} name={name} profileImage={profile?.image} profileType="student" />
-            <UpperProfileSection profile={profile} isOwner={isOwner} onUpdate={handleProfileUpdate} />
-            {isOwner && <PostIdea />}
-            <LowerProfileSection isOwner={isOwner} viewedUserId={id} viewedUserType="Student" />
+            <UpperProfileSection profile={profile} isOwner={isOwner} onUpdate={handleProfileUpdate} onUpdateSuccess={handleFeedRefresh}/>
+            {isOwner && <PostIdea onPostSuccess={handleFeedRefresh} />}
+            <LowerProfileSection isOwner={isOwner} viewedUserId={id} viewedUserType="Student" refreshTrigger={feedRefreshTrigger} />
 
 
             

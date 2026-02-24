@@ -33,4 +33,11 @@ class Teacher extends Authenticatable
     return $this->morphMany(Ideas::class, 'author');
     }
 
+    protected $appends = ['profile_image']; 
+
+    public function getProfileImageAttribute()
+    {
+        
+        return $this->profile ? $this->profile->image : null;
+    }
 }

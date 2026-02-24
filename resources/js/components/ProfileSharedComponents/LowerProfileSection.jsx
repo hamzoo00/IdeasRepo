@@ -34,7 +34,7 @@ const Colors = {
   lightest: "#CAF0F8",
 };
 
-export default function LowerProfileSection({ isOwner, viewedUserId, viewedUserType }) {
+export default function LowerProfileSection({ isOwner, viewedUserId, viewedUserType, refreshTrigger }) {
 
   const [ideas, setIdeas] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -46,6 +46,8 @@ export default function LowerProfileSection({ isOwner, viewedUserId, viewedUserT
   // STATE: 'active' or 'trash' also count of trashed ideas
   const [viewMode, setViewMode] = useState('active'); 
   const [trashCount, setTrashCount] = useState(0);
+
+
   const fetchIdeas = async () => {
     if (!viewedUserId || !viewedUserType) return;
 
@@ -74,7 +76,7 @@ export default function LowerProfileSection({ isOwner, viewedUserId, viewedUserT
 
   useEffect(() => {
     fetchIdeas();
-  }, [viewedUserId, viewedUserType, viewMode]); // Refetch when mode changes
+  }, [viewedUserId, viewedUserType, viewMode, refreshTrigger]); // Refetch when mode changes
 
      const handleOpenIdeaModal = (idea) => {
         setSearchParams({ idea: idea.id }); 
@@ -178,7 +180,7 @@ export default function LowerProfileSection({ isOwner, viewedUserId, viewedUserT
                                   idea={idea} 
                                   isOwner={isOwner} 
                                   refreshIdeas={fetchIdeas} 
-                                  isTrashMode={false} 
+                                  isTrashMode={viewMode === 'trash'} 
                                   onCardClick={handleOpenIdeaModal} 
                               />
                           );
@@ -223,7 +225,7 @@ export default function LowerProfileSection({ isOwner, viewedUserId, viewedUserT
                                   idea={activeIdea} 
                                   isOwner={isOwner}
                                   refreshIdeas={fetchIdeas}
-                                  isTrashMode={false}
+                                  isTrashMode={viewMode === 'trash'}
                               />
                           </Box>
                       </Box>

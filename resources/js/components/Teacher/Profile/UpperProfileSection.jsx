@@ -54,7 +54,7 @@ const parseList = (str) => {
 };
 
 
-export default function UpperProfileSection({ profile, isOwner, onUpdate }) {
+export default function UpperProfileSection({ profile, isOwner, onUpdate, onUpdateSuccess }) {
 
   const navigate = useNavigate();
   const [teacherProfile, setTeacherProfile] = useState(profile);
@@ -171,9 +171,7 @@ export default function UpperProfileSection({ profile, isOwner, onUpdate }) {
           full_name: freshUser.full_name,
          }
       )
-      
-      console.log(freshUser.image);
-
+      onUpdateSuccess();
       setIsEditing(false);
       alert("Profile updated successfully!");
       navigate(`/${freshUser.full_name}/${freshUser.id}/teacher/profile`);

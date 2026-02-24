@@ -85,7 +85,7 @@ export default function IdeaCard({ idea, isOwner, refreshIdeas, isTrashMode, onC
 
   
   const getProfileImage = () => {
-      const imgPath = idea.author?.image;
+      const imgPath = idea.author?.profile_image ;
       if (!imgPath) return null;
       return imgPath.startsWith('http') ? imgPath : `http://ideasrepo.test/storage/${imgPath}`;
   };

@@ -44,6 +44,7 @@ import {
 } from '@mui/icons-material';
 import { formatDistanceToNow } from 'date-fns';
 import api from './axios';
+import ReportModal from './Report/ReportModel'; 
 
 const Colors = {
   darkest: "#03045E",
@@ -63,13 +64,11 @@ export default function IdeaCard({ idea, isOwner, refreshIdeas, isTrashMode, onC
   const [expanded, setExpanded] = useState(false);
   const [editing, setEditing] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
-  
-  // Preview Flow State
+ 
   const [previewState, setPreviewState] = useState('idle');
 
   // Report Dialog State
   const [reportOpen, setReportOpen] = useState(false);
-  const [reportReason, setReportReason] = useState('');
 
   // Edit Data State
   const [editData, setEditData] = useState({
@@ -86,7 +85,6 @@ export default function IdeaCard({ idea, isOwner, refreshIdeas, isTrashMode, onC
 
 
   const isTeacher = idea.author_type?.toLowerCase().includes('teacher');
-console.log(isTeacher)
   
   const getProfileImage = () => {
       const imgPath = idea.author?.profile_image ;
@@ -405,24 +403,11 @@ console.log(isTeacher)
       </Menu>
 
       {/* Report Dialog */}
-      <Dialog open={reportOpen} onClose={() => setReportOpen(false)} PaperProps={{ sx: { borderRadius: 3 } }} onClick={(e) => e.stopPropagation()}>
-         <DialogTitle sx={{ bgcolor: Colors.lightest, color: Colors.darkest }}>Report Idea</DialogTitle>
-         <DialogContent sx={{ minWidth: 350, mt: 2 }}>
-             <FormControl fullWidth sx={{ mt: 1, mb: 2 }}>
-                <InputLabel>Reason</InputLabel>
-                <Select value={reportReason} label="Reason" onChange={(e) => setReportReason(e.target.value)}>
-                    <MenuItem value="Spam">Spam or Misleading</MenuItem>
-                    <MenuItem value="Inappropriate">Inappropriate Content</MenuItem>
-                    <MenuItem value="Plagiarism">Plagiarism</MenuItem>
-                </Select>
-             </FormControl>
-             <TextField fullWidth multiline rows={3} label="Details (Optional)" />
-         </DialogContent>
-         <DialogActions sx={{ p: 2 }}>
-             <Button onClick={() => setReportOpen(false)} sx={{ color: Colors.dark }}>Cancel</Button>
-             <Button variant="contained" color="error" onClick={() => { alert("Reported!"); setReportOpen(false); }}>Report</Button>
-         </DialogActions>
-      </Dialog>
+       <ReportModal
+          open={reportOpen}
+          onClose={() => setReportOpen(false)}
+          ideaId={idea.id}
+       />
     </>
   );
 }

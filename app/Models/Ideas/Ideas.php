@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Prunable;
+use App\Models\Report\Report;
+
 
 class Ideas extends Model
 {
@@ -31,4 +33,9 @@ class Ideas extends Model
     {
         return static::where('deleted_at', '<=', now()->subDays(30));
     }
+
+    public function reports()
+   {
+    return $this->hasMany(Report::class);
+   }
 }

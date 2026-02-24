@@ -13,7 +13,14 @@ return new class extends Migration
     {
         Schema::create('reports', function (Blueprint $table) {
             $table->id();
+            $table->morphs('reporter'); // Creates reporter_id, reporter_type
+            $table->foreignId('idea_id')->constrained()->onDelete('cascade'); 
+            $table->string('reason');
+            $table->text('comment')->nullable();
+            $table->string('status')->default('pending');
             $table->timestamps();
+
+            $table->index(['status', 'created_at']);
         });
     }
 

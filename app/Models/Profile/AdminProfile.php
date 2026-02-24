@@ -4,6 +4,7 @@ namespace App\Models\Profile;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Auth\Admin;
+use App\Models\Admin\AdminLog;
 
 class AdminProfile extends Model
 {
@@ -19,6 +20,11 @@ class AdminProfile extends Model
     public function admin()
     {
         return $this->belongsTo(Admin::class);
+    }
+
+    public function logs()
+    {
+    return $this->hasMany(AdminLog::class, 'admin_id');
     }
   
 }

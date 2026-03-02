@@ -45,10 +45,6 @@ export default function AdminProfile() {
              setIsOwner(isProfileOwner);
              syncUserToRedux(profileData, isProfileOwner);
 
-            if (profileData?.full_name?.trim().toLocaleLowerCase() !== name.trim().toLocaleLowerCase()) {
-              navigate(`/${profileData.full_name}/${id}/profile`, { replace: true });
-             }
-
            } catch (err) {
              setError("Failed to load profile. Please try again later.\n" + err.message);
            } finally {

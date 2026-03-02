@@ -11,6 +11,7 @@ import { useDispatch } from 'react-redux';
 import { setUser} from '../../store/slices/userDetailsSlice';
 import { useNavigate } from 'react-router-dom';
 import LoadingScreen from '../../components/LoadingScreen';
+import { useSelector } from 'react-redux';
 
 
 export default function TeacherProfile() {
@@ -35,10 +36,8 @@ export default function TeacherProfile() {
         is_owner: true,
       }));
     }
-    console.log(latestProfileData.id);
   };
    
-
      useEffect(() => {
          let mounted = true;
          (async () => {
@@ -50,9 +49,10 @@ export default function TeacherProfile() {
              setProfile(profileData);
              setIsOwner(isProfileOwner);
              syncUserToRedux(profileData, isProfileOwner);
+             
 
             if (profileData?.full_name?.trim().toLocaleLowerCase() !== name.trim().toLocaleLowerCase()) {
-              navigate(`/${profileData.full_name}/${id}/profile`, { replace: true });
+              navigate(`/${profileData.full_name}/${id}/teacher/profile`, { replace: true });
              }
 
            } catch (err) {
@@ -61,8 +61,12 @@ export default function TeacherProfile() {
              if (mounted) setLoading(false);
            }
          })();
-         return () => { mounted = false; };
+        return () => { mounted = false; };
        }, [id]);
+
+      
+      const isAdminViewing = useSelector((state) => state.auth.user.type === 'admin');
+    
 
      const handleProfileUpdate = (updatedProfile) => {
          const latestProfile = { ...profile, ...updatedProfile };
@@ -70,6 +74,8 @@ export default function TeacherProfile() {
          setProfile(latestProfile); 
          syncUserToRedux(latestProfile, isOwner);
        };   
+
+     
 
        const handleFeedRefresh = () => {
         setFeedRefreshTrigger(prev => prev + 1);
@@ -81,9 +87,9 @@ export default function TeacherProfile() {
     
     return <>
         <Header id={id} name={name} profileImage={profile?.image} profileType="teacher" />
-        <UpperProfileSection profile={profile} isOwner={isOwner} onUpdate={handleProfileUpdate} onUpdateSuccess={handleFeedRefresh}/>
+        <UpperProfileSection profile={profile} isOwner={isOwner} onUpdate={handleProfileUpdate} onUpdateSuccess={handleFeedRefresh} isAdminViewing={isAdminViewing}/>
         {isOwner && <PostIdea onPostSuccess={handleFeedRefresh}/>}
-        <LowerProfileSection isOwner={isOwner} viewedUserId={id} viewedUserType="Teacher" refreshTrigger={feedRefreshTrigger}/>
+        <LowerProfileSection isOwner={isOwner} viewedUserId={id} viewedUserType="Teacher" refreshTrigger={feedRefreshTrigger} isAdminViewing={isAdminViewing}/>
 
         <ErrorMessage 
                error={error} 

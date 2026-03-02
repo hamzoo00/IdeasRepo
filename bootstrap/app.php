@@ -33,7 +33,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         Route::middleware('api')
             ->prefix('api')
-            ->group(__DIR__.'/../routes/adminLog.php');
+            ->group(__DIR__.'/../routes/adminActions.php');
     },
     )
     ->withMiddleware(function (Middleware $middleware): void {

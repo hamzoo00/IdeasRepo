@@ -10,6 +10,7 @@ import { useDispatch } from 'react-redux';
 import { setUser} from '../../store/slices/userDetailsSlice';
 import { useNavigate } from 'react-router-dom';
 import LoadingScreen from '../../components/LoadingScreen';
+import { useSelector } from 'react-redux';
 
 export default function StudentProfile() {
 
@@ -62,6 +63,8 @@ export default function StudentProfile() {
          })();
          return () => { mounted = false; };
        }, [id]);
+
+    const isAdminViewing = useSelector((state) => state.auth.user.type === 'admin');
     
     const handleProfileUpdate = (updatedProfile) => {
           
@@ -83,9 +86,9 @@ export default function StudentProfile() {
     return ( 
     <>
             <Header id={id} name={name} profileImage={profile?.image} profileType="student" />
-            <UpperProfileSection profile={profile} isOwner={isOwner} onUpdate={handleProfileUpdate} onUpdateSuccess={handleFeedRefresh}/>
+            <UpperProfileSection profile={profile} isOwner={isOwner} onUpdate={handleProfileUpdate} onUpdateSuccess={handleFeedRefresh} isAdminViewing={isAdminViewing}/>
             {isOwner && <PostIdea onPostSuccess={handleFeedRefresh} />}
-            <LowerProfileSection isOwner={isOwner} viewedUserId={id} viewedUserType="Student" refreshTrigger={feedRefreshTrigger} />
+            <LowerProfileSection isOwner={isOwner} viewedUserId={id} viewedUserType="Student" refreshTrigger={feedRefreshTrigger} isAdminViewing={isAdminViewing} />
 
 
             

@@ -46,6 +46,8 @@ export default function Home() {
     const logInUserId = useSelector((state) => state.auth.user.id);
     const logInUserName = useSelector((state) => state.auth.user.full_name);
 
+    const isAdminViewing = profileType === 'admin';
+
     const [ideas, setIdeas] = useState([]);
     const [loading, setLoading] = useState(true);
     const [apiError, setApiError] = useState("");
@@ -189,6 +191,7 @@ export default function Home() {
                                 refreshIdeas={fetchFeed} 
                                 isTrashMode={false} 
                                 onCardClick={handleOpenIdeaModal} 
+                                isAdminViewing={isAdminViewing}
                             />
                         );
                     })}
@@ -233,6 +236,7 @@ export default function Home() {
                                 isOwner={logInUserId?.id === activeIdea.author_id && activeIdea.author_type?.toLowerCase().includes(profileType.toLowerCase())}
                                 refreshIdeas={fetchFeed}
                                 isTrashMode={false}
+                                isAdminViewing={isAdminViewing}
                             />
                         </Box>
                     </Box>

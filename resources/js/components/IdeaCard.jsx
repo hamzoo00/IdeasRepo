@@ -19,6 +19,8 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  ListItemIcon,
+  ListItemText,
   FormControl,
   InputLabel,
   Select,
@@ -40,7 +42,9 @@ import {
   Delete as DeleteIcon,
   RestoreFromTrash as RestoreIcon,       
   DeleteForever as DeleteForeverIcon,
-  Share as ShareIcon
+  Share as ShareIcon,
+  Warning as WarningIcon,
+  Block as BlockIcon,
 } from '@mui/icons-material';
 import { formatDistanceToNow } from 'date-fns';
 import api from './axios';
@@ -58,7 +62,7 @@ const Colors = {
   lightest: "#CAF0F8",
 };
 
-export default function IdeaCard({ idea, isOwner, refreshIdeas, isTrashMode, onCardClick }) {
+export default function IdeaCard({ idea, isOwner, refreshIdeas, isTrashMode, onCardClick, isAdminViewing }) {
   const navigate = useNavigate();
   
   const [expanded, setExpanded] = useState(false);
@@ -197,9 +201,39 @@ export default function IdeaCard({ idea, isOwner, refreshIdeas, isTrashMode, onC
   handleMenuClose();
 };
 
+  const handleAdminAction = async (action) => {
+    handleMenuClose();
+    if (!window.confirm(`Are you sure you want to ${action}?`)) return;
+
+    try {
+        if (action === 'delete') {
+            await api.delete(`/admin/ideas/${idea.id}`);
+            
+        } 
+        else if (action === 'warn') {
+            await api.post('/admin/users/warn', {
+                user_id: idea.author_id,
+                user_type: idea.author_type.toLowerCase().includes('student') ? 'student' : 'teacher',
+                reason: 'Violation found in post content'
+            });
+            alert("User warned.");
+        }
+        else if (action === 'suspend') {
+            await api.post('/admin/users/suspend', {
+                user_id: idea.author_id,
+                user_type: idea.author_type.toLowerCase().includes('student') ? 'student' : 'teacher',
+                reason: 'Suspended via feed'
+            });
+            alert("User suspension status toggled.");
+        }
+    } catch (err) {
+        alert("Action failed: " + err.response?.data?.message);
+    }
+};
+
   const renderMenuItems = () => {
     // 1. Visitor View (Not Owner)
-    if (!isOwner) {
+    if (!isOwner && !isAdminViewing) {
       return [
         <MenuItem key="share" onClick={handleShare} sx={{ gap: 1 }}>
             <ShareIcon fontSize="small" /> Share Link
@@ -222,7 +256,34 @@ export default function IdeaCard({ idea, isOwner, refreshIdeas, isTrashMode, onC
       ];
     }
 
-    // 3. Owner - Normal Mode (Edit / Soft Delete)
+     //3. If Admin 
+     if(isAdminViewing) {
+      return [
+        <Divider key="divider" /> ,
+        
+        <MenuItem key={'warn'} onClick={() => handleAdminAction('warn')} sx={{ color: 'orange' }}>
+            <ListItemIcon><WarningIcon sx={{ color: 'orange' }} /></ListItemIcon>
+            <ListItemText>Warn Author</ListItemText>
+        </MenuItem> ,
+
+        <MenuItem key={'suspend'} onClick={() => handleAdminAction('suspend')} sx={{ color: 'darkred' }}>
+            <ListItemIcon><BlockIcon sx={{ color: 'darkred' }} /></ListItemIcon>
+            <ListItemText>Suspend Author</ListItemText>
+        </MenuItem> ,
+
+        <MenuItem key={'delete'} onClick={() => handleAdminAction('delete')} sx={{ color: 'red' }}>
+            <ListItemIcon><DeleteForeverIcon sx={{ color: 'red' }} /></ListItemIcon>
+            <ListItemText>Delete Idea Permanently</ListItemText>
+        </MenuItem> ,
+
+        <MenuItem key="share" onClick={handleShare} sx={{ gap: 1 }}>
+            <ShareIcon fontSize="small" /> Share Link
+        </MenuItem> ,
+      
+      ];  
+
+    }
+    // 4. Owner - Normal Mode (Edit / Soft Delete)
     return [
       <MenuItem key="share" onClick={handleShare} sx={{ gap: 1 }}>
           <ShareIcon fontSize="small" /> Share Link
@@ -234,6 +295,7 @@ export default function IdeaCard({ idea, isOwner, refreshIdeas, isTrashMode, onC
           <DeleteIcon fontSize="small" /> Delete
       </MenuItem>
     ];
+
   };
 
   // RENDER: Edit Mode

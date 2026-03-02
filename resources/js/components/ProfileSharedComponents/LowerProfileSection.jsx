@@ -13,14 +13,15 @@ import {
 } from '@mui/material';
 import SentimentDissatisfiedIcon from '@mui/icons-material/SentimentDissatisfied';
 import { Close as CloseIcon } from '@mui/icons-material';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'; // Inactive Trash Icon
-import AutoDeleteIcon from '@mui/icons-material/AutoDelete'; // Restore Icon for empty state
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'; 
+import AutoDeleteIcon from '@mui/icons-material/AutoDelete'; 
 import api from '../axios'; 
 // import IdeaCard from './IdeaCard';
 import ErrorMessage from '../ErrorMessage';
 import IdeaCard from '../IdeaCard'
 import { useSearchParams } from 'react-router-dom';
-
+import echo from '../echo';
+import { useSelector } from 'react-redux';
 
 const Colors = {
   darkest: "#03045E",
@@ -34,7 +35,9 @@ const Colors = {
   lightest: "#CAF0F8",
 };
 
-export default function LowerProfileSection({ isOwner, viewedUserId, viewedUserType, refreshTrigger }) {
+export default function LowerProfileSection({ isOwner, viewedUserId, viewedUserType, refreshTrigger, isAdminViewing }) {
+
+  const logInUserId = useSelector((state) => state.auth.user.id);
 
   const [ideas, setIdeas] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -76,6 +79,47 @@ export default function LowerProfileSection({ isOwner, viewedUserId, viewedUserT
 
   useEffect(() => {
     fetchIdeas();
+
+    const channel = echo.channel('public-feed');
+
+        channel.listen('.IdeaCreated', (e) => {
+    
+         const newIdea = {
+          ...e.idea,
+          is_owner: logInUserId && (e.idea.author_id === logInUserId) 
+    };
+            setIdeas(prevIdeas => [newIdea, ...prevIdeas]);
+        });
+
+        channel.listen('.IdeaUpdated', (e) => {
+            setIdeas(prevIdeas => prevIdeas.map(idea => 
+                idea.id === e.idea.id ? e.idea : idea
+            ));
+        });
+
+        channel.listen('.IdeaDeleted', (e) => {
+            setIdeas(prevIdeas => prevIdeas.filter(idea => idea.id !== e.ideaId));
+        });
+        
+        channel.listen('.IdeaRestored', (e) => {
+           const restoredIdea = {
+               ...e.idea,
+               is_owner: logInUserId && (e.idea.author_id === logInUserId) 
+           };
+           setIdeas(prevIdeas => {
+               const updatedList = [restoredIdea, ...prevIdeas];
+
+               return updatedList.sort((a, b) => 
+                   new Date(b.created_at) - new Date(a.created_at)
+               );
+           });
+
+           
+       });
+
+        return () => {
+            echo.leaveChannel('public-feed');
+        };
   }, [viewedUserId, viewedUserType, viewMode, refreshTrigger]); // Refetch when mode changes
 
      const handleOpenIdeaModal = (idea) => {
@@ -182,6 +226,7 @@ export default function LowerProfileSection({ isOwner, viewedUserId, viewedUserT
                                   refreshIdeas={fetchIdeas} 
                                   isTrashMode={viewMode === 'trash'} 
                                   onCardClick={handleOpenIdeaModal} 
+                                  isAdminViewing={isAdminViewing}
                               />
                           );
                       })}
@@ -226,6 +271,7 @@ export default function LowerProfileSection({ isOwner, viewedUserId, viewedUserT
                                   isOwner={isOwner}
                                   refreshIdeas={fetchIdeas}
                                   isTrashMode={viewMode === 'trash'}
+                                  isAdminViewing={isAdminViewing}
                               />
                           </Box>
                       </Box>

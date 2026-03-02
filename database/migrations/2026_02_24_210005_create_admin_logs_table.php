@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('admin_logs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('admin_id')->constrained('users');
+            $table->foreignId('admin_id')->constrained('admins')->onDelete('restrict');
             $table->foreignId('report_id')->nullable()->constrained()->onDelete('set null');
             // Act on Idea or User with its target_id, target_type(idea,user)
             $table->nullableMorphs('target');

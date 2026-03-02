@@ -54,7 +54,7 @@ const parseList = (str) => {
 };
 
 
-export default function UpperProfileSection({ profile, isOwner, onUpdate, onUpdateSuccess }) {
+export default function UpperProfileSection({ profile, isOwner, onUpdate, onUpdateSuccess,isAdminViewing }) {
 
   const navigate = useNavigate();
   const [teacherProfile, setTeacherProfile] = useState(profile);
@@ -211,6 +211,34 @@ export default function UpperProfileSection({ profile, isOwner, onUpdate, onUpda
     return words.slice(0, limit).join(" ") + "...";
   };
 
+  const handleAdminAction = async (action) => {
+    
+    if (!window.confirm(`Are you sure you want to ${action}?`)) return;
+
+    try {
+    
+        if (action === 'warn') {
+            await api.post('/admin/users/warn', {
+                user_id: teacherProfile.id,
+                user_type: 'teacher',
+                reason: 'Violation found in Account content'
+            });
+            alert("User warned.");
+        }
+        else if (action === 'suspend') {
+            await api.post('/admin/users/suspend', {
+                user_id: teacherProfile.id,
+                user_type: 'teacher',
+                reason: 'Suspended due to repeated violations of University Code of Conduct'
+            });
+            alert("User suspension status toggled.");
+        }
+    } catch (err) {
+        alert("Action failed: " + err.response?.data?.message);
+    }
+};
+
+
   const showMoreButton = teacherProfile?.bio && teacherProfile.bio.split(/\s+/).length > 30;
 
   if (!teacherProfile) {
@@ -309,6 +337,49 @@ export default function UpperProfileSection({ profile, isOwner, onUpdate, onUpda
 
               {/* Action Buttons */}
               <Box>
+                 {isAdminViewing && (
+                       <Box sx={{ mt: 2, p: 2, border: '1px dashed red', borderRadius: 2, bgcolor: '#fff5f5' }}>
+                           <Typography variant="subtitle2" color="error" fontWeight="bold" gutterBottom>
+                               ⚠️ Admin Actions
+                           </Typography>
+
+                           <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+
+                               {/* SUSPENSION STATUS */}
+                               <Chip 
+                                   label={profile.is_suspended ? "ACCOUNT SUSPENDED" : "Active Account"} 
+                                   color={profile.is_suspended ? "error" : "success"} 
+                                   variant="outlined"
+                               />
+
+                               {/* WARNING COUNT */}
+                               <Typography variant="body2">
+                                   Warnings: <b>{profile.warning_count}</b>
+                               </Typography>
+
+                               <Box sx={{ flexGrow: 1 }} />
+
+                               {/* ACTION BUTTONS */}
+                               <Button 
+                                   variant="contained" 
+                                   color="warning" 
+                                   size="small"
+                                   onClick={() => handleAdminAction('warn')}
+                               >
+                                   Warn
+                               </Button>
+
+                               <Button 
+                                   variant="contained" 
+                                   color={profile.is_suspended ? "success" : "error"} 
+                                   size="small"
+                                   onClick={() => handleAdminAction('suspend')}
+                               >
+                                   {profile.is_suspended ? "Unsuspend" : "Suspend"}
+                               </Button>
+                           </Box>
+                       </Box>
+                   )}
                 {isOwner && (
                     !isEditing ? (
                     <Button variant="contained" startIcon={<EditIcon />} onClick={() => setIsEditing(true)} sx={{ bgcolor: Colors.darker, "&:hover": { bgcolor: Colors.darkest }, borderRadius: 2, textTransform: "none", px: 3 }}>Edit Profile</Button>
@@ -324,9 +395,7 @@ export default function UpperProfileSection({ profile, isOwner, onUpdate, onUpda
 
             <Divider sx={{ my: 4, borderColor: Colors.lighter }} />
 
-            {/* ========================================================= */}
             {/* SECTION 2: Professional & Contact Info */}
-            {/* ========================================================= */}
             <Box>
                 <Typography variant="h6" sx={{ color: Colors.darkest, mb: 2, fontWeight: 600 }}>
                   Professional & Contact Info

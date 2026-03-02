@@ -222,7 +222,7 @@ export default function IdeaCard({ idea, isOwner, refreshIdeas, isTrashMode, onC
             await api.post('/admin/users/suspend', {
                 user_id: idea.author_id,
                 user_type: idea.author_type.toLowerCase().includes('student') ? 'student' : 'teacher',
-                reason: 'Suspended via feed'
+                reason: 'Violation found of University Code of Conduct'
             });
             alert("User suspension status toggled.");
         }

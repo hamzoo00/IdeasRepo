@@ -10,6 +10,9 @@ use App\Models\Ideas\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Events\IdeaCreated;
+use App\Events\IdeaUpdated;
+use App\Events\IdeaDeleted;
+use App\Events\IdeaRestored;
 
 class IdeasController extends Controller
 {
@@ -79,7 +82,7 @@ class IdeasController extends Controller
         return response()->json([
             'message' => 'Idea posted successfully!',
             'idea' => $idea->load('tags')
-        ], 201);    
+        ], 201);
     }
 
     public function getProfileIdeas($type, $id)
@@ -138,6 +141,9 @@ class IdeasController extends Controller
             'is_edited' => true,
         ]);
 
+        // Broadcast the update to other clients
+        broadcast(new IdeaUpdated($idea))->toOthers();
+
         $tagIds = [];
         foreach ($validated['tags'] as $tagName) {
             $tag = Tag::firstOrCreate(['name' => $tagName]);
@@ -177,6 +183,8 @@ class IdeasController extends Controller
         
         $idea->restore();
 
+        broadcast(new IdeaRestored($idea))->toOthers();
+
         return response()->json(['message' => 'Idea restored successfully']);
     }
 
@@ -188,6 +196,7 @@ class IdeasController extends Controller
         // 1. Find the idea, even if it is already in the trash
         /** @var \App\Models\Student|\App\Models\Teacher $user */
         $idea = $user->ideas()->withTrashed()->findOrFail($id);
+        $idToBroadcast = $idea->id;
 
         if ($idea->trashed()) {
             // SCENARIO A: It is already in the trash -> DELETE FOREVER
@@ -198,6 +207,8 @@ class IdeasController extends Controller
             $idea->delete();
             $message = 'Idea moved to trash.';
         }
+
+        broadcast(new IdeaDeleted($idToBroadcast));
         
         return response()->json(['message' => $message]);
     }

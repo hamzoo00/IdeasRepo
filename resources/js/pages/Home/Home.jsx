@@ -105,6 +105,23 @@ export default function Home() {
             // Filter it out of the array silently
             setIdeas(prevIdeas => prevIdeas.filter(idea => idea.id !== e.ideaId));
         });
+        
+        channel.listen('.IdeaRestored', (e) => {
+           const restoredIdea = {
+               ...e.idea,
+               is_owner: logInUserId && (e.idea.author_id === logInUserId) 
+           };
+       
+           setIdeas(prevIdeas => {
+               // 1. Add the restored idea to the existing list
+               const updatedList = [restoredIdea, ...prevIdeas];
+       
+               // 2. Sort the entire list by date (Newest first)
+               return updatedList.sort((a, b) => 
+                   new Date(b.created_at) - new Date(a.created_at)
+               );
+           });
+       });
 
         // Cleanup the listener when the user leaves the page
         return () => {

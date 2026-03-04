@@ -214,7 +214,7 @@ export default function IdeaCard({ idea, isOwner, refreshIdeas, isTrashMode, onC
             await api.post('/admin/users/warn', {
                 user_id: idea.author_id,
                 user_type: idea.author_type.toLowerCase().includes('student') ? 'student' : 'teacher',
-                reason: 'Violation found in post content'
+                reason: 'Violation found in posted content'
             });
             alert("User warned.");
         }

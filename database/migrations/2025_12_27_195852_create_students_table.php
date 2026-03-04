@@ -29,8 +29,7 @@ return new class extends Migration
             $table->string('image')->nullable();
             $table->string('password');
 
-            
-            $table->boolean('is_suspended')->default(false);
+
             $table->timestamps();
         });
     }

@@ -11,6 +11,7 @@ use App\Models\Auth\Teacher;
 use App\Models\Profile\TeacherProfile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Report\Report;
 
 class AdminActionController extends Controller
 {
@@ -26,13 +27,21 @@ class AdminActionController extends Controller
         $this->ensureAdmin();
         
         $idea = Ideas::findOrFail($id);
+
+        // Update all PENDING reports for this idea to RESOLVED
+        Report::where('idea_id', $id)
+            ->where('reason', '!=', 'Fake Profile') // Keep fake profile reports pending 
+            ->where('status', 'pending')
+            ->update([
+                'status' => 'resolved',
+            ]);
         
         AdminLog::create([
             'admin_id' => Auth::id(),
             'target_id' => $idea->id,
             'target_type' => Ideas::class,
             'action_taken' => 'permanent_delete',
-            'notes' => $request->input('reason', 'Direct deletion by admin'),
+            'notes' => $request->input('reason', 'Violation of guidelines'),
             'resolved_at' => now(),
         ]);
 

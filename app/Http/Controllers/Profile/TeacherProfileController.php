@@ -54,7 +54,7 @@ class TeacherProfileController extends Controller
             'full_name'    => 'required|string|max:255',
             
             'email'        => ['required', 'email', Rule::unique('teachers')->ignore($teacher->id)],
-            'whatsapp'     => 'nullable|string|max:13',
+            'whatsapp'     => 'nullable|string|max:14',
             'profession'   => 'nullable|string|max:100',
             'office'       => 'nullable|string|max:100',
             'office_hours' => 'nullable|string|max:100',

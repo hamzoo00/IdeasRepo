@@ -29,10 +29,10 @@ const Colors = {
 };
 
 
-const PROGRAMS = [
-  { value: 'BSDEGREES' , label: 'Undergraduate (BS/BBA)' },
-  { value: 'MSDEGREES' , label: 'Master (MS/MBA)' },
-  { value: 'PHDDEGREES', label: 'PhD' },
+const DEGREES = [
+  { value: 'BSPROGRAMS' , label: 'Undergraduate (BS/BBA)' },
+  { value: 'MSPROGRAMS' , label: 'Master (MS/MBA)' },
+  { value: 'PHDPROGRAMS', label: 'PhD' },
 ];
 
 const SEMESTERS = [
@@ -46,7 +46,7 @@ const SEMESTERS = [
   { value: '8', label: '8th Semester' },
 ];
 
-const BSDEGREES = [
+const BSPROGRAMS = [
   // Computing & Data
   { value: 'bs_se', label: 'BS Software Engineering' },
   { value: 'bs_cs', label: 'BS Computer Science' },
@@ -67,23 +67,23 @@ const BSDEGREES = [
   { value: 'bs_dev', label: 'BS Development Studies' },
 ];
 
-const MSDEGREES = [
+const MSPROGRAMS = [
   // Computing & Data
   { value: 'ms_se', label: 'MS Software Engineering' },
   { value: 'ms_cs', label: 'MS Computer Science' },
   { value: 'ms_ds', label: 'MS Data Science' },
 ];
-const PHDDEGREES = [
+const PHDPROGRAMS = [
     // Computing & Data
   { value: 'ps_se', label: 'Phd Software Engineering' },
   { value: 'ps_cs', label: 'Phd Artificial Intelligence' },
   { value: 'ps_ds', label: 'Phd Information Security' },
 ];
 
-const DEGREES = {
-  BSDEGREES: BSDEGREES,
-  MSDEGREES: MSDEGREES,
-  PHDDEGREES: PHDDEGREES,
+const PROGRAMS = {
+  BSPROGRAMS: BSPROGRAMS,
+  MSPROGRAMS: MSPROGRAMS,
+  PHDPROGRAMS: PHDPROGRAMS,
 };
 
 
@@ -104,8 +104,8 @@ export default function SignUp() {
     }
   });
 
-const selectedProgram = watch("program");
-const degreeOptions = selectedProgram ? DEGREES[selectedProgram] : [];
+const selectedDegree = watch("degree");
+const programOptions = selectedDegree ? PROGRAMS[selectedDegree] : [];
 
 const password = watch("password");
   
@@ -270,30 +270,8 @@ const password = watch("password");
                 />
              
 
-              {/* 5. Program */}
+              {/* 5. Degree */}
              
-                <TextField
-                  select
-                  required
-                  fullWidth
-                  id="program"
-                  label="Program"
-                  defaultValue=""
-                  inputProps={register("program", { required: "Program is required" })}
-                  error={!!errors.program}
-                  helperText={errors.program?.message}
-                  sx={{ '& .MuiOutlinedInput-root.Mui-focused fieldset': { borderColor: Colors.primary }}}
-                >
-                  {PROGRAMS.map((option) => (
-                    <MenuItem key={option.value} value={option.value}>
-                      {option.label}
-                    </MenuItem>
-                  ))}
-                </TextField>
-             
-
-              {/* 6. Degree */}
-          
                 <TextField
                   select
                   required
@@ -306,8 +284,30 @@ const password = watch("password");
                   helperText={errors.degree?.message}
                   sx={{ '& .MuiOutlinedInput-root.Mui-focused fieldset': { borderColor: Colors.primary }}}
                 >
+                  {DEGREES.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </TextField>
+             
+
+              {/* 6. Program */}
+          
+                <TextField
+                  select
+                  required
+                  fullWidth
+                  id="program"
+                  label="Program"
+                  defaultValue=""
+                  inputProps={register("program", { required: "Program is required" })}
+                  error={!!errors.program}
+                  helperText={errors.program?.message}
+                  sx={{ '& .MuiOutlinedInput-root.Mui-focused fieldset': { borderColor: Colors.primary }}}
+                >
                    
-                  {degreeOptions.map((option) => (
+                  {programOptions.map((option) => (
                     <MenuItem key={option.value} value={option.label}>
                       {option.label}
                     </MenuItem>
@@ -337,7 +337,7 @@ const password = watch("password");
                 </TextField>
              
 
-              {/* 8a. Email */}
+              {/* 8. Email */}
               
                 <TextField
                   required
@@ -358,7 +358,7 @@ const password = watch("password");
                 />
              
 
-               {/* 8b. Whatsapp Number */}
+               {/* 9. Whatsapp Number */}
                
                 <TextField
                   fullWidth
@@ -447,7 +447,7 @@ const password = watch("password");
                  }}
                />
 
-              {/* 9. Area of Interest (Optional) */}
+              {/* 11. Area of Interest (Optional) */}
               
                 <TextField
                   fullWidth

@@ -14,6 +14,8 @@ import { useSelector } from 'react-redux';
 
 export default function StudentProfile() {
 
+  
+
     const {id, name} = useParams();         // thoughout entire app the id and name represent url ID and Name
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -64,7 +66,8 @@ export default function StudentProfile() {
          return () => { mounted = false; };
        }, [id]);
 
-    const isAdminViewing = useSelector((state) => state.auth.user.type === 'admin');
+      const isAdminViewing = useSelector((state) => state.auth.user?.type === 'admin') || false;
+
     
     const handleProfileUpdate = (updatedProfile) => {
           

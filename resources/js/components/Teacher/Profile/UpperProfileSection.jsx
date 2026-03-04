@@ -161,9 +161,11 @@ export default function UpperProfileSection({ profile, isOwner, onUpdate, onUpda
        const freshUser = response.data.teacher;
        
        setTeacherProfile(prev => ({
-        ...prev,
+         ...prev,
         ...freshUser,
-        image: freshUser.profile?.image
+            // Spread the nested profile data that i returned from backend through load(profilr).
+            ...(freshUser.profile || {}), 
+            image: freshUser.profile?.image || freshUser.image,
       }));  
 
        onUpdate(

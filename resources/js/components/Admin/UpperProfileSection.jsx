@@ -156,15 +156,12 @@ export default function UpperProfileSection({ profile, isOwner, onUpdate }) {
        setAdminProfile(prev => ({
         ...prev,
         ...freshUser,
-        image: freshUser.profile.image,
+            // Spread the nested profile data that i returned from backend through load(profilr).
+            ...(freshUser.profile || {}), 
+            image: freshUser.profile?.image || freshUser.image,
       }));  
 
-      onUpdate(
-        { image: freshUser.profile.image, 
-          full_name: freshUser.full_name,
-         }
-      )
-
+      onUpdate(freshUser);
       setIsEditing(false);
       alert("Profile updated successfully!");
    

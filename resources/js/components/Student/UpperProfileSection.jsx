@@ -150,7 +150,9 @@ export default function UpperProfileSection({ profile, isOwner, onUpdate, onUpda
        setStudentProfile(prev => ({
         ...prev,
         ...freshUser,
-        image: freshUser.image
+            // Spread the nested profile data that i returned from backend through load(profilr).
+            ...(freshUser.profile || {}), 
+            image: freshUser.profile?.image || freshUser.image,
       }));  
 
       onUpdate(freshUser);

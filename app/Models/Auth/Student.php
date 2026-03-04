@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\Ideas\Ideas;
+use App\Models\Notification\Notification;
 
 class Student extends Authenticatable
 {
@@ -38,13 +39,19 @@ class Student extends Authenticatable
     public function getProfileImageAttribute()
     {
      
-        return $this->image; 
+        return $this->image;
     }
 
       public function ideas()
      {
           return $this->morphMany(Ideas::class, 'author');
      }
+
+      public function notifications()
+     {
+          return $this->morphMany(Notification::class, 'notifiable_user');
+     }
+
 
       
 }

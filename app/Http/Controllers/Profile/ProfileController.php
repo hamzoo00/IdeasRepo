@@ -25,7 +25,7 @@ class ProfileController extends Controller
                 'university_name' => $profile->university_name,
                 'full_name' => $profile->full_name,
                 'batch' => $profile->batch,
-                'degree' => $profile->degree,
+                'program' => $profile->program,
                 'semester' => $profile->semester,
                 'email' => $profile->email,
                 'whatsapp' => $profile->whatsapp,

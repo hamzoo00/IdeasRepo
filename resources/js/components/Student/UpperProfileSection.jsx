@@ -83,7 +83,6 @@ export default function UpperProfileSection({ profile, isOwner, onUpdate, onUpda
 
   const bioValue = watch("bio") || "";
   const wordCount = bioValue.trim().split(/\s+/).filter(Boolean).length;
-  
 
   useEffect(() => {
     if (studentProfile) {
@@ -390,7 +389,7 @@ export default function UpperProfileSection({ profile, isOwner, onUpdate, onUpda
                     {/* Status Block */}
                     <Box sx={{ flex: "1 1 300px", p: 2, bgcolor: Colors.lightest, borderRadius: 2 }}>
                         <Typography variant="body2" color="textSecondary" gutterBottom>Current Status</Typography>
-                        <Typography variant="body1" fontWeight={600} color={Colors.darker}>{studentProfile.degree} </Typography>
+                        <Typography variant="body1" fontWeight={600} color={Colors.darker}>{studentProfile?.program || "No Program Assigned"} </Typography>
                         <Typography variant="body2">Batch: {studentProfile.batch} • Semester: {studentProfile.semester}</Typography>
                     </Box>
 

@@ -16,6 +16,7 @@ import { Link } from 'react-router';
 import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { clearUser} from '../store/slices/userDetailsSlice';
+import NotificationBell from './NotificationBell/NotificationBell';
 
 
 const Colors = {
@@ -190,6 +191,11 @@ export default function Header({id, name, profileImage, profileType}) {
                    {page.label}                
                  </Button>
             ))}
+          </Box>
+
+         {/* Notification Bell */}
+        <Box sx={{ flexGrow: 0, flexFlow: 'row-reverse', marginRight:1 ,display: { xs: 'flex'} }}>
+          <NotificationBell />
           </Box>
           <Box sx={{ flexGrow: 0 }}>
             <Tooltip title="Open settings">

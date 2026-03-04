@@ -14,8 +14,6 @@ import { useSelector } from 'react-redux';
 
 export default function StudentProfile() {
 
-  
-
     const {id, name} = useParams();         // thoughout entire app the id and name represent url ID and Name
     const dispatch = useDispatch();
     const navigate = useNavigate();

@@ -12,6 +12,8 @@ use App\Models\Profile\TeacherProfile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Report\Report;
+use App\Models\Notification\Notification;
+use Illuminate\Support\Facades\DB;
 
 class AdminActionController extends Controller
 {
@@ -24,32 +26,44 @@ class AdminActionController extends Controller
 
     public function deleteIdea(Request $request, $id)
     {
+    
+     return DB::transaction(function () use ($id, $request) {
         $this->ensureAdmin();
         
         $idea = Ideas::findOrFail($id);
 
-        // Update all PENDING reports for this idea to RESOLVED
-        Report::where('idea_id', $id)
-            ->where('reason', '!=', 'Fake Profile') // Keep fake profile reports pending 
-            ->where('status', 'pending')
-            ->update([
-                'status' => 'resolved',
-            ]);
-        
+        // 1. Get all user IDs who reported this specific idea
+        $reporters = Report::where('idea_id', $id)
+                            ->where('reason','!=', 'Fake Profile')
+                            ->get(['reporter_id', 'reporter_type']);
+
+        // 2. Log admin action
         AdminLog::create([
             'admin_id' => Auth::id(),
             'target_id' => $idea->id,
             'target_type' => Ideas::class,
             'action_taken' => 'permanent_delete',
-            'notes' => $request->input('reason', 'Violation of guidelines'),
+            'notes' => $request->reason? $request->reason : 'Violation of guidelines',
             'resolved_at' => now(),
         ]);
+
+
+        // 3. Notify all reporters
+        foreach ($reporters as $reporter) {
+            Notification::create([
+                'notifiable_user_id' => $reporter->reporter_id,
+                'notifiable_user_type' => $reporter->reporter_type,
+                'title' => $idea->title,
+                'message' => "The idea you reported has been removed for violating community guidelines.",
+            ]);
+        }
 
         $idOfDeletedIdea = $idea->id;
         $idea->forceDelete();
         broadcast(new IdeaDeleted($idOfDeletedIdea))->toOthers();
 
         return response()->json(['message' => 'Idea permanently deleted.']);
+     });
     }
 
    

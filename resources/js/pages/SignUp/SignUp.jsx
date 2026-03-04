@@ -68,13 +68,12 @@ const BSPROGRAMS = [
 ];
 
 const MSPROGRAMS = [
-  // Computing & Data
   { value: 'ms_se', label: 'MS Software Engineering' },
   { value: 'ms_cs', label: 'MS Computer Science' },
   { value: 'ms_ds', label: 'MS Data Science' },
 ];
+
 const PHDPROGRAMS = [
-    // Computing & Data
   { value: 'ps_se', label: 'Phd Software Engineering' },
   { value: 'ps_cs', label: 'Phd Artificial Intelligence' },
   { value: 'ps_ds', label: 'Phd Information Security' },

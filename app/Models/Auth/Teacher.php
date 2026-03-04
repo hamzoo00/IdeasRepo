@@ -7,6 +7,7 @@ use App\Models\Profile\TeacherProfile;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\Ideas\Ideas;
+use App\Models\Notification\Notification;
 
 class Teacher extends Authenticatable
 {
@@ -39,5 +40,10 @@ class Teacher extends Authenticatable
     {
         
         return $this->profile ? $this->profile->image : null;
+    }
+
+    public function notifications()
+    {
+        return $this->morphMany(Notification::class, 'notifiable_user');
     }
 }

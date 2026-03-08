@@ -30,6 +30,7 @@ class ReportController extends Controller
         $existing = Report::where('idea_id', $request->idea_id)
             ->where('reporter_id', $user->id)
             ->where('reporter_type', get_class($user))
+            ->where('status', 'pending')
             ->exists();
 
         if ($existing) {

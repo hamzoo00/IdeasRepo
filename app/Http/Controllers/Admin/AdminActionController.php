@@ -90,8 +90,7 @@ class AdminActionController extends Controller
                 ->where('author_type', $userType)
                 ->join('reports', 'ideas.id', '=', 'reports.idea_id')
                 ->where('reports.status', 'pending')
-                ->where('reports.reason', '=', 'Fake Profile')
-                ->select('reports.reporter_id', 'reports.reporter_type', 'ideas.title', 'reports.id as report_id')
+                ->select('reports.reporter_id', 'reports.reporter_type', 'reports.reason', 'ideas.title', 'reports.id as report_id')
                 ->get();
   
             // 2. Notify each reporter
@@ -100,7 +99,7 @@ class AdminActionController extends Controller
                     'notifiable_user_id' => $report->reporter_id,
                     'notifiable_user_type' => $report->reporter_type,
                     'title' =>  $report->title,
-                    'message' => "The author of the idea you reported as Fake Profile has been officially WARNED",
+                    'message' => "The author of the idea you reported as \"" . $report->reason . "\" has been officially WARNED",
                 ]);
   
                 // 3. Mark the report as resolved
@@ -161,8 +160,8 @@ class AdminActionController extends Controller
                     ->where('author_id', $userId)
                     ->where('author_type', $userType)
                     ->join('reports', 'ideas.id', '=', 'reports.idea_id')
-                    ->where('reports.reason', '=', 'Fake Profile')
-                    ->select('reports.reporter_id', 'reports.reporter_type', 'ideas.title', 'reports.id as report_id')
+                    ->where('reports.status', 'pending')
+                    ->select('reports.reporter_id', 'reports.reporter_type', 'reports.reason', 'ideas.title', 'reports.id as report_id')
                     ->get();
       
                 // 2. Notify each reporter
@@ -171,7 +170,7 @@ class AdminActionController extends Controller
                         'notifiable_user_id' => $report->reporter_id,
                         'notifiable_user_type' => $report->reporter_type,
                         'title' =>  $report->title,
-                        'message' => "The author of the idea you reported as Fake Profile has been officially SUSPENDED",
+                        'message' => "The author of the idea you reported as \"" . $report->reason . "\" has been officially SUSPENDED",
                     ]);
       
                     // 3. Mark the report as resolved

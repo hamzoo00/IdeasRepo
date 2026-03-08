@@ -62,7 +62,7 @@ export default function StudentProfile() {
            }
          })();
          return () => { mounted = false; };
-       }, [id]);
+       }, [id, feedRefreshTrigger]);
 
       const isAdminViewing = useSelector((state) => state.auth.user?.type === 'admin') || false;
 

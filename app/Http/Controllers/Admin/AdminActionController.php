@@ -35,6 +35,7 @@ class AdminActionController extends Controller
         // 1. Get all user IDs who reported this specific idea
         $reporters = Report::where('idea_id', $id)
                             ->where('reason','!=', 'Fake Profile')
+                            ->where('status', 'pending')
                             ->get(['reporter_id', 'reporter_type']);
 
         // 2. Log admin action
@@ -69,63 +70,126 @@ class AdminActionController extends Controller
    
     public function warnUser(Request $request)
     {
-        $this->ensureAdmin();
+        return DB::transaction(function () use ($request) {
+           $this->ensureAdmin();
+  
+            $request->validate([
+                'user_id' => 'required',
+                'user_type' => 'required|in:student,teacher',
+                'reason' => 'required|string'
+            ]);
+  
+            $userId = $request->user_id;
+            $userType = $request->user_type === 'student' ? Student::class : TeacherProfile::class ; // 'App\Models\Auth\Student' or 'Teacher'
+            $reason = $request->reason;
+  
+            // 1. Find all ideas owned by this user that have PENDING reports
+            // We pluck the IDs to find the people who reported them
+            $reportedIdeas = DB::table('ideas')
+                ->where('author_id', $userId)
+                ->where('author_type', $userType)
+                ->join('reports', 'ideas.id', '=', 'reports.idea_id')
+                ->where('reports.status', 'pending')
+                ->where('reports.reason', '=', 'Fake Profile')
+                ->select('reports.reporter_id', 'reports.reporter_type', 'ideas.title', 'reports.id as report_id')
+                ->get();
+  
+            // 2. Notify each reporter
+            foreach ($reportedIdeas as $report) {
+                Notification::create([
+                    'notifiable_user_id' => $report->reporter_id,
+                    'notifiable_user_type' => $report->reporter_type,
+                    'title' =>  $report->title,
+                    'message' => "The author of the idea you reported as Fake Profile has been officially WARNED",
+                ]);
+  
+                // 3. Mark the report as resolved
+                Report::where('id', $report->report_id)->update([
+                    'status' => 'resolved',
+                ]);
+            }
 
-        $request->validate([
-            'user_id' => 'required',
-            'user_type' => 'required|in:student,teacher',
-            'reason' => 'required|string'
-        ]);
-
-        
-        $model = $request->user_type === 'student' ? Student::class : TeacherProfile::class;
-        $user = $model::findOrFail($request->user_id);
-
-        $user->increment('warning_count');
-
-        AdminLog::create([
-            'admin_id' => Auth::id(),
-            'target_id' => $user->id,
-            'target_type' => $model,
-            'action_taken' => 'warn_user',
-            'notes' => $request->reason,
-            'resolved_at' => now(),
-        ]);
-
-        return response()->json(['message' => 'User warned successfully.', 'new_count' => $user->warning_count]);
+            // 5. Increment the warning count for the user
+             $user = $userType::findOrFail($request->user_id);
+             $user->increment('warning_count');
+  
+            // 6. Log the Admin Action
+            AdminLog::create([
+                'admin_id' => Auth::id(),
+                'target_id' => $userId,
+                'target_type' => $userType,
+                'action_taken' => 'warn_user',
+                'notes' => $reason,
+                'resolved_at' => now(),
+          ]);
+  
+          return response()->json([
+            'message' => 'User warned and reporters notified.',
+             'new_count' => $user->warning_count
+             ]);
+    });
+       
     }
 
-    // SUSPEND / UNSUSPEND
     public function toggleSuspension(Request $request)
     {
-        $this->ensureAdmin();
+           return DB::transaction(function () use ($request) {
+           $this->ensureAdmin();
+  
+            $request->validate([
+                'user_id' => 'required',
+                'user_type' => 'required|in:student,teacher',
+                'reason' => 'required|string'
+            ]);
+  
+            $userId = $request->user_id;
+            $userType = $request->user_type === 'student' ? Student::class : TeacherProfile::class ; // 'App\Models\Auth\Student' or 'Teacher'
+            $reason = $request->reason;
 
-        $request->validate([
-            'user_id' => 'required',
-            'user_type' => 'required|in:student,teacher',
-            'reason' => 'nullable|string'
-        ]);
 
-        $model = $request->user_type === 'student' ? Student::class : TeacherProfile::class;
-        $user = $model::findOrFail($request->user_id);
+            // Toggle logic
+            $user = $userType::findOrFail($userId);
+            $user->is_suspended = $user->is_suspended ? false : true;
+            
+            if ($user->is_suspended) {
+                $user->suspension_reason = $reason ?? 'Violation of terms';
+                $user->suspended_at = now();
 
-        // Toggle logic
-        $user->is_suspended = !$user->is_suspended;
-        
-        if ($user->is_suspended) {
-            $user->suspension_reason = $request->reason ?? 'Violation of terms';
-            $user->suspended_at = now();
-        } else {
-            $user->suspension_reason = null;
-            $user->suspended_at = null;
-        }
-        
-        $user->save();
-
-        AdminLog::create([
+                // 1. Find all ideas owned by this user that have PENDING reports
+                // We pluck the IDs to find the people who reported them
+                $reportedIdeas = DB::table('ideas')
+                    ->where('author_id', $userId)
+                    ->where('author_type', $userType)
+                    ->join('reports', 'ideas.id', '=', 'reports.idea_id')
+                    ->where('reports.reason', '=', 'Fake Profile')
+                    ->select('reports.reporter_id', 'reports.reporter_type', 'ideas.title', 'reports.id as report_id')
+                    ->get();
+      
+                // 2. Notify each reporter
+                foreach ($reportedIdeas as $report) {
+                    Notification::create([
+                        'notifiable_user_id' => $report->reporter_id,
+                        'notifiable_user_type' => $report->reporter_type,
+                        'title' =>  $report->title,
+                        'message' => "The author of the idea you reported as Fake Profile has been officially SUSPENDED",
+                    ]);
+      
+                    // 3. Mark the report as resolved
+                    Report::where('id', $report->report_id)->update([
+                        'status' => 'resolved',
+                    ]);
+                }
+            } else {
+                $user->suspension_reason = null;
+                $user->suspended_at = null;
+            }
+            
+            $user->save();
+  
+             AdminLog::create([
             'admin_id' => Auth::id(),
             'target_id' => $user->id,
-            'target_type' => $model,
+            'target_type' => $userType,
             'action_taken' => $user->is_suspended ? 'suspend_user' : 'unsuspend_user',
             'notes' => $request->reason,
             'resolved_at' => now(),
@@ -135,5 +199,7 @@ class AdminActionController extends Controller
             'message' => $user->is_suspended ? 'User suspended.' : 'User activated.',
             'is_suspended' => $user->is_suspended
         ]);
+    });
+  
     }
 }

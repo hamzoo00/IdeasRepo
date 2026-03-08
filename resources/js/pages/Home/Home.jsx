@@ -146,7 +146,7 @@ export default function Home() {
     return (
         <>
           <Header id={id} name={name} profileImage={profileImage} profileType={profileType}/>
-          <PostIdea />
+          {!isAdminViewing && <PostIdea />}
           
           <Container maxWidth="md" sx={{ mt: 4, mb: 8 }}>
             

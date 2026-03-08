@@ -104,7 +104,7 @@ export default function UpperProfileSection({ profile, isOwner, onUpdate, onUpda
          setImagePreview(null);
       }
     }
-  }, [studentProfile, reset]);
+  }, [studentProfile, reset, profile]);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -208,18 +208,17 @@ export default function UpperProfileSection({ profile, isOwner, onUpdate, onUpda
             await api.post('/admin/users/warn', {
                 user_id: studentProfile.id,
                 user_type: 'student',
-                reason: 'Violation found in post content'
+                reason: 'Violation found in the Profile content'
             });
-            alert("User warned.");
         }
-        else if (action === 'suspend') {
+        else if (action === 'suspend' || action === 'unsuspend') {
             await api.post('/admin/users/suspend', {
                 user_id: studentProfile.id,
                 user_type: 'student',
                 reason: 'Suspended due to repeated violations'
             });
-            alert("User suspension status toggled.");
         }
+        onUpdateSuccess();
     } catch (err) {
         alert("Action failed: " + err.response?.data?.message);
     }
@@ -352,7 +351,7 @@ export default function UpperProfileSection({ profile, isOwner, onUpdate, onUpda
                                   variant="contained" 
                                   color={profile.is_suspended ? "success" : "error"} 
                                   size="small"
-                                  onClick={() => handleAdminAction('suspend')}
+                                  onClick={() => handleAdminAction(profile.is_suspended ? 'unsuspend' : 'suspend')}
                               >
                                   {profile.is_suspended ? "Unsuspend" : "Suspend"}
                               </Button>

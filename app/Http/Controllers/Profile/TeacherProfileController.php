@@ -32,7 +32,9 @@ class TeacherProfileController extends Controller
         'office'       => $teacher->profile ? $teacher->profile->office : null,
         'office_hours' => $teacher->profile ? $teacher->profile->office_hours : null,
         'image'        => $teacher->profile ? $teacher->profile->image : null,
-    ];
+        'warning_count' => $teacher->profile ? $teacher->profile->warning_count : 0,
+        'is_suspended' => $teacher->profile ? $teacher->profile->is_suspended : false,
+     ];
 
         return response()->json([
             'profile' => $data,

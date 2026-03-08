@@ -32,6 +32,8 @@ class ProfileController extends Controller
                 'bio' => $profile->bio,
                 'interest' => $profile->interest,
                 'image' => $profile->image,
+                'warning_count' => $profile->warning_count,
+                'is_suspended' => $profile->is_suspended,
             ];
 
         return response()->json([

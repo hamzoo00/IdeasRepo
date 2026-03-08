@@ -62,7 +62,7 @@ export default function TeacherProfile() {
            }
          })();
         return () => { mounted = false; };
-       }, [id]);
+       }, [id, feedRefreshTrigger]);
 
       
       const isAdminViewing = useSelector((state) => state.auth.user?.type === 'admin') || false;
@@ -75,7 +75,7 @@ export default function TeacherProfile() {
          syncUserToRedux(latestProfile, isOwner);
        };   
 
-       const handleFeedRefresh = () => {
+     const handleFeedRefresh = () => {
         setFeedRefreshTrigger(prev => prev + 1);
        };
 

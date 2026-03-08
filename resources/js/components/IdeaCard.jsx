@@ -283,7 +283,7 @@ export default function IdeaCard({ idea, isOwner, refreshIdeas, isTrashMode, onC
       ];  
 
     }
-    // 4. Owner - Normal Mode (Edit / Soft Delete)
+    // 4. Owner - Normal Mode 
     return [
       <MenuItem key="share" onClick={handleShare} sx={{ gap: 1 }}>
           <ShareIcon fontSize="small" /> Share Link
@@ -319,7 +319,6 @@ export default function IdeaCard({ idea, isOwner, refreshIdeas, isTrashMode, onC
                     label="Status"
                     onChange={(e) => setEditData({ ...editData, status: e.target.value })}
                   >
-                    <MenuItem value="Idea">Idea</MenuItem>
                     <MenuItem value="In Progress">In Progress</MenuItem>
                     <MenuItem value="Completed">Completed</MenuItem>
                     <MenuItem value="Abandoned">Abandoned</MenuItem>

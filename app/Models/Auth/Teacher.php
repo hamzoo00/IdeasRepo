@@ -8,10 +8,11 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\Ideas\Ideas;
 use App\Models\Notification\Notification;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Teacher extends Authenticatable
 {
-    use HasApiTokens;
+    use HasApiTokens, HasFactory;
     
     protected $table = 'teachers';
 

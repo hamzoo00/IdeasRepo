@@ -5,6 +5,10 @@ namespace Database\Seeders;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\Auth\Student;
+use App\Models\Auth\Teacher;
+use App\Models\Ideas\Ideas;
+use App\Models\Ideas\Tag;
 
 class DatabaseSeeder extends Seeder
 {
@@ -13,15 +17,25 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+       // 1. Create 20 Students and 5 Teachers first
+        Student::factory(20)->create();
+        Teacher::factory(5)->create();
 
-        User::firstOrCreate(
-            ['email' => 'test@example.com'],
-            [
-                'name' => 'Test User',
-                'password' => 'password',
-                'email_verified_at' => now(),
-            ]
-        );
+   
+
+      $tagIds = Tag::pluck('id');
+
+        // 2. Creating ideas
+        Ideas::factory(30)->create()->each(function ($idea) use ($tagIds) {
+            
+            // 3. Randomly pick 2 to 4 tag IDs for this specific idea
+            $randomTags = $tagIds->random(rand(2, 4))->toArray();
+
+            // 4. Attach them using sync() 
+            // sync() is safer than attach() in seeders as it prevents duplicates
+            $idea->tags()->sync($randomTags);
+        });
+     Ideas::factory()->aiProject()->count(10)->create();
+
     }
 }

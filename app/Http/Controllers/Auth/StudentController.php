@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Auth\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
+
 
 
 class StudentController extends Controller
@@ -48,7 +50,11 @@ class StudentController extends Controller
 
           $validated['password'] = bcrypt($validated['password']);
 
-
+          
+          $isBlacklisted = DB::table('blacklisted_emails')->where('email', $request->email)->exists();
+          if ($isBlacklisted) {
+              return response()->json(['message' => 'This email is restricted from creating new accounts.'], 403);
+          }
 
            $student = Student::create($validated);
 

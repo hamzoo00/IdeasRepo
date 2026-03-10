@@ -102,7 +102,7 @@ class AdminActionController extends Controller
                 ->where('author_type', $userType)
                 ->join('reports', 'ideas.id', '=', 'reports.idea_id')
                 ->where('reports.status', 'pending')
-                ->select('reports.reporter_id', 'reports.reporter_type', 'reports.reason', 'ideas.title', 'reports.id as report_id')
+                ->select('reports.reporter_id', 'reports.reporter_type', 'reports.reason', 'ideas.title','ideas.id as idea_id' ,  'reports.id as report_id')
                 ->get();
   
             // 2. Notify each reporter
@@ -118,6 +118,8 @@ class AdminActionController extends Controller
                 Report::where('id', $report->report_id)->update([
                     'status' => 'resolved',
                 ]);
+                //3b. Decrement the report count for the idea
+                DB::table('ideas')->where('id', $report->idea_id)->decrement('report_count');
             }
 
             // Notify warned user
@@ -183,7 +185,7 @@ class AdminActionController extends Controller
                     ->where('author_type', $userType)
                     ->join('reports', 'ideas.id', '=', 'reports.idea_id')
                     ->where('reports.status', 'pending')
-                    ->select('reports.reporter_id', 'reports.reporter_type', 'reports.reason', 'ideas.title', 'reports.id as report_id')
+                    ->select('reports.reporter_id', 'reports.reporter_type', 'reports.reason', 'ideas.title', 'ideas.id as idea_id', 'reports.id as report_id')
                     ->get();
       
                 // 2. Notify each reporter
@@ -199,6 +201,9 @@ class AdminActionController extends Controller
                     Report::where('id', $report->report_id)->update([
                         'status' => 'resolved',
                     ]);
+
+                    //3b. Decrement the report count for the idea
+                    DB::table('ideas')->where('id', $report->idea_id)->decrement('report_count');
                 }
 
                     // 4. Reset warning count on suspension

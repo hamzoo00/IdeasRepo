@@ -35,7 +35,7 @@ const Colors = {
   lightest: "#CAF0F8",
 };
 
-export default function LowerProfileSection({ isOwner, viewedUserId, viewedUserType, refreshTrigger, isAdminViewing }) {
+export default function LowerProfileSection({ isOwner, viewedUserId, viewedUserType, refreshTrigger, isAdminViewing, admin }) {
 
   const logInUserId = useSelector((state) => state.auth.user.id);
 

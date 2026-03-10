@@ -8,7 +8,7 @@ import rootReducer from './rootReducer';
 const persistConfig = {
   key: 'root'  ,
   storage: storageSession,
-  whitelist: ['auth'], 
+  whitelist: ['auth', 'adminAction'], 
   // blacklist: ['temp'] // these will be cleared on refresh
 };
 

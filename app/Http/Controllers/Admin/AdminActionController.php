@@ -35,8 +35,8 @@ class AdminActionController extends Controller
 
         foreach ($reports as $report) {
             $this->notifyUser(
-                 $report->reporter_id,
-                 $report->reporter_type,
+                $report->reporter_id,
+                $report->reporter_type,
                 "Report Update: " . $title,
                 "The content you reported as \"{$report->reason}\" has been processed. Action taken: {$actionName}.",
             );
@@ -101,14 +101,17 @@ class AdminActionController extends Controller
         return DB::transaction(function () use ($id, $request) {
             $this->ensureAdmin();
             $idea = Ideas::findOrFail($id);
-            $reason = $request->reason ?: 'Your idea was removed for violating community guidelines.';
+            $reason = $request->reason ?: 'Your idea "'.$idea->title.'" was removed for violating community guidelines.';
 
             $this->resolveReportsByIdea($id, $idea->title, "Idea Removed");
             $this->logAction($id, Ideas::class, 'permanent_delete', $reason);
-            $this->notifyUser($request->user_id, $request->user_type == 'student' ? Student::class : Teacher::class, "Post Deleted", $reason);
-
+            $this->notifyUser($idea->author_id, $idea->author_type, "Post Deleted", $reason);
+       
+            $idToBroadcast = $idea->id;
             $idea->forceDelete();
-            broadcast(new IdeaDeleted($id))->toOthers();
+
+            broadcast(new IdeaDeleted($idToBroadcast))->toOthers();
+        
             return response()->json(['message' => 'Idea permanently deleted.']);
         });
     }
@@ -118,10 +121,10 @@ class AdminActionController extends Controller
             $this->ensureAdmin();
             $userType = $request->user_type == 'student' ? Student::class : Teacher::class;
             $user = $userType::findOrFail($request->user_id);
-            $reason = $request->reason ?: 'Violation of Rules and Regulations. Repeated violations lead to suspension.';
+            $reason = $request->reason ?: 'Violation of Rules and Regulations. Repeated Violations would lead to Account Suspension.';
 
             $this->resolveReportsByAccount($user->id, $userType, "Warned");
-            $user->increment('warning_count');
+            $userType == Student::class ? $user->increment('warning_count') : TeacherProfile::where('teacher_id', $user->id)->increment('warning_count');
             $this->logAction($user->id, $userType, 'warn_user', $reason);
             $this->notifyUser($user->id, $userType, 'Warning Issued', $reason);
 
@@ -132,9 +135,10 @@ class AdminActionController extends Controller
     public function toggleSuspension(Request $request) {
         return DB::transaction(function () use ($request) {
             $this->ensureAdmin();
+
             $userType = $request->user_type == 'student' ? Student::class : Teacher::class;
-            $user = $userType::findOrFail($request->user_id);
-            $reason = $request->reason ?: ($user->is_suspended ? 'Your account has been reactivated.' : 'Your account has been suspended for violations.');
+            $user = $userType == Student::class ? $userType::findOrFail($request->user_id) : TeacherProfile::where('id', $request->user_id)->firstOrFail();
+            $reason = $request->reason ? $request->reason : ($user->is_suspended ? 'Your account has been reactivated.' : 'Your account has been suspended for violations.');
 
             $user->is_suspended = !$user->is_suspended;
             
@@ -180,17 +184,16 @@ class AdminActionController extends Controller
         });
     }
 
-    public function deleteUserAccount(Request $request) {
-        return DB::transaction(function () use ($request) {
+    public function deleteUserAccount(Request $request , $userId, $user_type) {
+        return DB::transaction(function () use ($request, $userId, $user_type) {
             $this->ensureAdmin();
-            $userType = $request->user_type == 'student' ? Student::class : Teacher::class;
-            $user = $userType::findOrFail($request->user_id);
+            $userType = $user_type == 'student' ? Student::class : Teacher::class;
+            $user = $userType::findOrFail($userId);
             $reason = $request->reason ?: 'Account permanently terminated for severe violations.';
 
             // 1. Blacklist the email
             DB::table('blacklisted_emails')->insert([
                 'email' => $user->email,
-                'reason' => $reason,
                 'created_at' => now(),
                 'updated_at' => now()
             ]);
@@ -210,8 +213,8 @@ class AdminActionController extends Controller
             foreach ($ideaIds as $ideaId) {
                 broadcast(new IdeaDeleted($ideaId))->toOthers();
             }
-
-            $user->delete();
+          
+            $user->forceDelete();
 
             return response()->json(['message' => 'User account deleted and email blacklisted.']);
         });

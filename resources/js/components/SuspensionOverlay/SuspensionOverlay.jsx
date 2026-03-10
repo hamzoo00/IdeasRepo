@@ -80,16 +80,16 @@ export default function SuspensionOverlay() {
           <Button 
             variant="outlined" 
             startIcon={<SupportIcon />}
-            sx={{ color: Colors.darkest, borderColor: Colors.darkest }}
+            sx={{ color: Colors.darkest, borderColor: Colors.darkest, width: {xs: '6rem', sm: '8rem'}, fontSize: {xs: '0.65rem', sm: '0.9rem'} }}
             onClick={() => window.location.href = '/contactUs'}
           >
-            Appeal Action
+            Appeal
           </Button>
           
           <Button 
             variant="contained" 
             startIcon={<LogoutIcon />}
-            sx={{ bgcolor: Colors.darkest, '&:hover': { bgcolor: '#000' } }}
+            sx={{ bgcolor: Colors.darkest, '&:hover': { bgcolor: '#000' }, width: {xs: '6rem', sm: '8rem'}, fontSize: {xs: '0.65rem', sm: '0.9rem'} }}
             onClick={handleLogout}
           >
             Logout

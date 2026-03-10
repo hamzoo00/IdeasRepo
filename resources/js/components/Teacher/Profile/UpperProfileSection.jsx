@@ -35,6 +35,8 @@ import {
 } from "@mui/icons-material";
 import api from "../../axios"; 
 import { useNavigate } from "react-router-dom";
+import {useDispatch} from "react-redux";
+import {setAdminActionTrigger} from "../../../store/slices/ModerationSlice";
 
 const Colors = {
   darkest: "#03045E",
@@ -62,6 +64,7 @@ export default function UpperProfileSection({ profile, isOwner, onUpdate, onUpda
   const [imagePreview, setImagePreview] = useState(null);
   const [serverError, setServerError] = useState("");
   const [isBioExpanded, setIsBioExpanded] = useState(false);
+  const dispatch = useDispatch();
 
   const {
     control,
@@ -214,32 +217,32 @@ export default function UpperProfileSection({ profile, isOwner, onUpdate, onUpda
   };
 
   const handleAdminAction = async (action) => {
-    
+   
     if (!window.confirm(`Are you sure you want to ${action}?`)) return;
 
+    const  user_id = profile.profile_id;
+    const  user_type = 'teacher';
+
     try {
-    
-        if (action === 'warn') {
+         if (action === 'warn') {
             await api.post('/admin/users/warn', {
-                user_id: teacherProfile.id,
-                user_type: 'teacher',
-                reason: 'Violation found in Account content'
+                user_id,
+                user_type,
             });
+            alert("User warned.");
         }
         else if (action === 'suspend' || action === 'unsuspend') {
             await api.post('/admin/users/suspend', {
-                user_id: teacherProfile.id,
-                user_type: 'teacher',
-                reason: 'Suspended due to repeated violations of University Code of Conduct'
+                user_id,
+                user_type,
             });
+            alert("User suspension status toggled.");
         }
-
-        onUpdateSuccess();
+       dispatch(setAdminActionTrigger());
     } catch (err) {
         alert("Action failed: " + err.response?.data?.message);
     }
 };
-
 
   const showMoreButton = teacherProfile?.bio && teacherProfile.bio.split(/\s+/).length > 30;
 

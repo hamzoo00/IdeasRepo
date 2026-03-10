@@ -33,6 +33,8 @@ import api from "../axios";
 import ErrorMessage from "../ErrorMessage";
 import { set } from "date-fns";
 import { useNavigate } from "react-router-dom";
+import {useDispatch} from "react-redux";
+import {setAdminActionTrigger} from "../../store/slices/ModerationSlice";
 
 const Colors = {
   darkest: "#03045E",
@@ -54,6 +56,7 @@ const parseInterests = (interestString) => {
 export default function UpperProfileSection({ profile, isOwner, onUpdate, onUpdateSuccess, isAdminViewing }) {
 
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [studentProfile, setStudentProfile] = useState(profile);
   const [isEditing, setIsEditing] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
@@ -199,26 +202,28 @@ export default function UpperProfileSection({ profile, isOwner, onUpdate, onUpda
   };
 
   const handleAdminAction = async (action) => {
-    
+   
     if (!window.confirm(`Are you sure you want to ${action}?`)) return;
 
+    const  user_id = profile.id;
+    const  user_type = 'student';
+
     try {
-    
         if (action === 'warn') {
             await api.post('/admin/users/warn', {
-                user_id: studentProfile.id,
-                user_type: 'student',
-                reason: 'Violation found in the Profile content'
+                user_id,
+                user_type,
             });
+            alert("User warned.");
         }
-        else if (action === 'suspend' || action === 'unsuspend') {
+         else if (action === 'suspend' || action === 'unsuspend') {
             await api.post('/admin/users/suspend', {
-                user_id: studentProfile.id,
-                user_type: 'student',
-                reason: 'Suspended due to repeated violations'
+                user_id,
+                user_type,
             });
+            alert("User suspension status toggled.");
         }
-        onUpdateSuccess();
+       dispatch(setAdminActionTrigger());
     } catch (err) {
         alert("Action failed: " + err.response?.data?.message);
     }

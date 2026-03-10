@@ -6,13 +6,13 @@ import UpperProfileSection from '../../components/Student/UpperProfileSection';
 import PostIdea from '../../components/PostIdea';
 import LowerProfileSection from '../../components/ProfileSharedComponents/LowerProfileSection';
 import ErrorMessage from  '../../components/ErrorMessage';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { setUser} from '../../store/slices/userDetailsSlice';
 import { useNavigate } from 'react-router-dom';
 import LoadingScreen from '../../components/LoadingScreen';
-import { useSelector } from 'react-redux';
 import { Warning } from '@mui/icons-material';
 import SuspensionOverlay from '../../components/SuspensionOverlay/SuspensionOverlay';
+
 
 export default function StudentProfile() {
 
@@ -25,7 +25,7 @@ export default function StudentProfile() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [feedRefreshTrigger, setFeedRefreshTrigger] = useState(0);
-    
+    const adminActionTrigger = useSelector((state) => state.adminAction.adminActiontrigger);
 
     const syncUserToRedux = (latestProfileData, ownerCheck) => {
     if (ownerCheck) {
@@ -67,9 +67,7 @@ export default function StudentProfile() {
            }
          })();
          return () => { mounted = false; };
-       }, [id, feedRefreshTrigger]);
-
-       console.log("Profile Data:", profile);
+       }, [id, feedRefreshTrigger,adminActionTrigger]);
 
       const isAdminViewing = useSelector((state) => state.auth.user?.type === 'admin') || false;
 

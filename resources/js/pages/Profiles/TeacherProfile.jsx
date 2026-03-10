@@ -26,6 +26,7 @@ export default function TeacherProfile() {
      const [loading, setLoading] = useState(true);
      const [error, setError] = useState(null);
      const [feedRefreshTrigger, setFeedRefreshTrigger] = useState(0);
+     const adminActionTrigger = useSelector((state) => state.adminAction.adminActiontrigger);
 
      
     const syncUserToRedux = (latestProfileData, ownerCheck) => {
@@ -67,7 +68,7 @@ export default function TeacherProfile() {
            }
          })();
         return () => { mounted = false; };
-       }, [id, feedRefreshTrigger]);
+       }, [id, feedRefreshTrigger,adminActionTrigger]);
 
       
       const isAdminViewing = useSelector((state) => state.auth.user?.type === 'admin') || false;

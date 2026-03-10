@@ -25,6 +25,7 @@ class TeacherProfileController extends Controller
         'email'     => $teacher->email,
 
         // Data from 'teacher_profiles' table (accessed via the relationship)
+        'profile_id'    => $teacher->profile ? $teacher->profile->id : null,
         'whatsapp'     => $teacher->profile ? $teacher->profile->whatsapp : null,
         'bio'          => $teacher->profile ? $teacher->profile->bio : null,
         'profession'   => $teacher->profile ? $teacher->profile->profession : null,

@@ -49,6 +49,8 @@ import {
 import { formatDistanceToNow } from 'date-fns';
 import api from './axios';
 import ReportModal from './Report/ReportModel'; 
+import { useDispatch } from 'react-redux';
+import {setAdminActionTrigger} from '../store/slices/ModerationSlice';
 
 const Colors = {
   darkest: "#03045E",
@@ -64,11 +66,12 @@ const Colors = {
 
 export default function IdeaCard({ idea, isOwner, refreshIdeas, isTrashMode, onCardClick, isAdminViewing }) {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   
   const [expanded, setExpanded] = useState(false);
   const [editing, setEditing] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
- 
+  const [isSuspended, setIsSuspended] = useState(false);
   const [previewState, setPreviewState] = useState('idle');
 
   // Report Dialog State
@@ -205,30 +208,37 @@ export default function IdeaCard({ idea, isOwner, refreshIdeas, isTrashMode, onC
     handleMenuClose();
     if (!window.confirm(`Are you sure you want to ${action}?`)) return;
 
+    const  user_id = idea.author_id;
+    const  user_type = idea.author_type.toLowerCase().includes('student') ? 'student' : 'teacher';
+  
     try {
         if (action === 'delete') {
             await api.delete(`/admin/ideas/${idea.id}`, {
-                user_id: idea.author_id,
-                user_type: idea.author_type.toLowerCase().includes('student') ? 'student' : 'teacher',
             });
-            
+           
         } 
         else if (action === 'warn') {
             await api.post('/admin/users/warn', {
-                user_id: idea.author_id,
-                user_type: idea.author_type.toLowerCase().includes('student') ? 'student' : 'teacher',
-                reason: 'Violation found in posted content'
+                user_id,
+                user_type,
             });
             alert("User warned.");
         }
-        else if (action === 'suspend') {
-            await api.post('/admin/users/suspend', {
-                user_id: idea.author_id,
-                user_type: idea.author_type.toLowerCase().includes('student') ? 'student' : 'teacher',
-                reason: 'Violation found of University Code of Conduct'
+        else if (action === 'suspend' || action === 'unsuspend') {
+           const res = await api.post('/admin/users/suspend', {
+                user_id,
+                user_type,
             });
+            setIsSuspended(res.data.is_suspended);
             alert("User suspension status toggled.");
         }
+
+        else if (action === 'deleteUser') {
+            await api.delete(`/admin/user/${user_id}/${user_type}`);
+            alert("User Account is been Deleted.");
+        }
+
+        dispatch(setAdminActionTrigger());
     } catch (err) {
         alert("Action failed: " + err.response?.data?.message);
     }
@@ -269,14 +279,19 @@ export default function IdeaCard({ idea, isOwner, refreshIdeas, isTrashMode, onC
             <ListItemText>Warn Author</ListItemText>
         </MenuItem> ,
 
-        <MenuItem key={'suspend'} onClick={() => handleAdminAction('suspend')} sx={{ color: 'darkred' }}>
-            <ListItemIcon><BlockIcon sx={{ color: 'darkred' }} /></ListItemIcon>
-            <ListItemText>Suspend Author</ListItemText>
+        <MenuItem key={'suspend'} onClick={() => isSuspended ? handleAdminAction('unsuspend') : handleAdminAction('suspend')} sx={{ color: isSuspended ? 'green' : 'darkred' }}>
+            <ListItemIcon><BlockIcon sx={{ color: isSuspended ? 'green' : 'darkred' }} /></ListItemIcon>
+            <ListItemText>{isSuspended ? 'Unsuspend Author' : 'Suspend Author'}</ListItemText>
         </MenuItem> ,
 
         <MenuItem key={'delete'} onClick={() => handleAdminAction('delete')} sx={{ color: 'red' }}>
             <ListItemIcon><DeleteForeverIcon sx={{ color: 'red' }} /></ListItemIcon>
-            <ListItemText>Delete Idea Permanently</ListItemText>
+            <ListItemText>Delete Idea </ListItemText>
+        </MenuItem> ,
+
+        <MenuItem key={'deleteUser'} onClick={() => handleAdminAction('deleteUser')} sx={{ color: 'red' }}>
+            <ListItemIcon><DeleteForeverIcon sx={{ color: 'red' }} /></ListItemIcon>
+            <ListItemText>Delete Account</ListItemText>
         </MenuItem> ,
 
         <MenuItem key="share" onClick={handleShare} sx={{ gap: 1 }}>
@@ -322,9 +337,12 @@ export default function IdeaCard({ idea, isOwner, refreshIdeas, isTrashMode, onC
                     label="Status"
                     onChange={(e) => setEditData({ ...editData, status: e.target.value })}
                   >
+                    <MenuItem value="Developed">Idea</MenuItem>
                     <MenuItem value="In Progress">In Progress</MenuItem>
+                    <MenuItem value="Testing">Testing</MenuItem>
+                    <MenuItem value="Deployed">Deployed</MenuItem>
                     <MenuItem value="Completed">Completed</MenuItem>
-                    <MenuItem value="Abandoned">Abandoned</MenuItem>
+                    <MenuItem value="Archived">Archived</MenuItem>
                   </Select>
                 </FormControl>
 

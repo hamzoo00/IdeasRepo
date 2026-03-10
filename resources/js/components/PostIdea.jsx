@@ -320,7 +320,10 @@ export default function PostIdea({onPostSuccess}) {
                   rules={{ required: true }}
                   render={({ field }) => (
                     <Select {...field} label="Project Status">
+                      <MenuItem value="Developed">Idea</MenuItem>
                       <MenuItem value="In Progress">In Progress</MenuItem>
+                      <MenuItem value="Testing">Testing</MenuItem>
+                      <MenuItem value="Deployed">Deployed</MenuItem>
                       <MenuItem value="Completed">Completed</MenuItem>
                     </Select>
                   )}

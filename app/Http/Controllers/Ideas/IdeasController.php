@@ -41,7 +41,7 @@ class IdeasController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'summary' => 'required|string|max:300',
-            'status' => 'required|in:In Progress,Completed',
+            'status' => 'required',
             'is_embargo' => 'boolean',
             'is_edited' => 'boolean',
             'tags' => 'required|array|min:3|max:5',
@@ -66,7 +66,7 @@ class IdeasController extends Controller
         ]);
 
         // new process added for websocket broadcasting
-        event(new IdeaCreated($idea));
+        broadcast(new IdeaCreated($idea))->toOthers();
 
         // 4. Process Tags
         $tagIds = [];

@@ -14,200 +14,135 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Report\Report;
 use App\Models\Notification\Notification;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class AdminActionController extends Controller
 {
-    // Helper to verify Admin status
+
+  // Resuable Functions
+
     private function ensureAdmin() {
-        if (!Auth::user() instanceof \App\Models\Auth\Admin) {
-            abort(403, 'Unauthorized. Admin access only.');
+         if (!Auth::user() instanceof \App\Models\Auth\Admin) {
+             abort(403, 'Unauthorized. Admin access only.');
+         }
+    }
+
+    private function resolveReportsByIdea($targetId, $title, $actionName) {
+        
+        $reports = Report::where('idea_id', $targetId)
+                        ->where('status', 'pending')
+                        ->get();
+
+        foreach ($reports as $report) {
+            $this->notifyUser(
+                 $report->reporter_id,
+                 $report->reporter_type,
+                "Report Update: " . $title,
+                "The content you reported as \"{$report->reason}\" has been processed. Action taken: {$actionName}.",
+            );
+        }
+
+        if ($reports->isNotEmpty()) {
+            Report::whereIn('id', $reports->pluck('id'))->update([
+                'status' => 'resolved',
+                'resolved_at' => now()
+            ]);
         }
     }
 
-    public function deleteIdea(Request $request, $id)
-    {
-    
-     return DB::transaction(function () use ($id, $request) {
-        $this->ensureAdmin();
-        
-        $userId = $request->user_id;
-        $userType = $request->user_type == 'student' ? Student::class : Teacher::class;
-        $reason = $request->reason;
+    private function resolveReportsByAccount($userId, $userType, $actionName) {
+        // Find all ideas owned by this user that have PENDING reports
+        $reportedItems = DB::table('ideas')
+            ->where('author_id', $userId)
+            ->where('author_type', $userType)
+            ->join('reports', 'ideas.id', '=', 'reports.idea_id')
+            ->where('reports.status', 'pending')
+            ->select('reports.reporter_id', 'reports.reporter_type', 'reports.reason', 'ideas.title', 'ideas.id as idea_id', 'reports.id as report_id')
+            ->get();
 
-        $idea = Ideas::findOrFail($id);
+        foreach ($reportedItems as $report) {
+            $this->notifyUser(
+                $report->reporter_id,
+                $report->reporter_type,
+                $report->title,
+                "The author of the idea you reported for '{$report->reason}' has been officially $actionName."
+            );
 
-        // 1. Get all user IDs who reported this specific idea
-        $reporters = Report::where('idea_id', $id)
-                            ->where('reason','!=', 'Fake Profile')
-                            ->where('status', 'pending')
-                            ->get(['reporter_id', 'reporter_type']);
+            Report::where('id', $report->report_id)->update(
+                ['status' => 'resolved',
+                'resolved_at' => now()]);
+            DB::table('ideas')->where('id', $report->idea_id)->decrement('report_count');
+        }
+    }
 
-        // 2. Log admin action
+    private function logAction($targetId, $targetType, $action, $notes) {
         AdminLog::create([
             'admin_id' => Auth::id(),
-            'target_id' => $idea->id,
-            'target_type' => Ideas::class,
-            'action_taken' => 'permanent_delete',
-            'notes' => $request->reason? $request->reason : 'Violation of guidelines',
+            'target_id' => $targetId,
+            'target_type' => $targetType,
+            'action_taken' => $action,
+            'notes' => $notes,
             'resolved_at' => now(),
         ]);
+    }
 
-
-        // 3. Notify all reporters
-        foreach ($reporters as $reporter) {
-            Notification::create([
-                'notifiable_user_id' => $reporter->reporter_id,
-                'notifiable_user_type' => $reporter->reporter_type,
-                'title' => $idea->title,
-                'message' => "The idea you reported has been removed for violating community guidelines.",
-            ]);
-        }
-
-        //4. Notify the user whose idea is been deleted
+    private function notifyUser($userId, $userType, $title, $message) {
         Notification::create([
-              'notifiable_user_id' => $userId,
-              'notifiable_user_type' => $userType,
-              'title' => $idea->title,
-              'message' => $request-> $reason ? $reason : 'Your Idea is been DELETED for the voilation of Rules'
+            'notifiable_user_id' => $userId,
+            'notifiable_user_type' => $userType,
+            'title' => $title,
+            'message' => $message
         ]);
-
-        $idOfDeletedIdea = $idea->id;
-        $idea->forceDelete();
-        broadcast(new IdeaDeleted($idOfDeletedIdea))->toOthers();
-
-        return response()->json(['message' => 'Idea permanently deleted.']);
-     });
     }
 
-   
-    public function warnUser(Request $request)
-    {
+    // ADMIN ACTIONS
+
+    public function deleteIdea(Request $request, $id) {
+        return DB::transaction(function () use ($id, $request) {
+            $this->ensureAdmin();
+            $idea = Ideas::findOrFail($id);
+            $reason = $request->reason ?: 'Your idea was removed for violating community guidelines.';
+
+            $this->resolveReportsByIdea($id, $idea->title, "Idea Removed");
+            $this->logAction($id, Ideas::class, 'permanent_delete', $reason);
+            $this->notifyUser($request->user_id, $request->user_type == 'student' ? Student::class : Teacher::class, "Post Deleted", $reason);
+
+            $idea->forceDelete();
+            broadcast(new IdeaDeleted($id))->toOthers();
+            return response()->json(['message' => 'Idea permanently deleted.']);
+        });
+    }
+
+    public function warnUser(Request $request) {
         return DB::transaction(function () use ($request) {
-           $this->ensureAdmin();
-  
-            $request->validate([
-                'user_id' => 'required',
-                'user_type' => 'required|in:student,teacher',
-                'reason' => 'required|string'
-            ]);
-  
-            $userId = $request->user_id;
+            $this->ensureAdmin();
             $userType = $request->user_type == 'student' ? Student::class : Teacher::class;
-            $reason = $request->reason;
-  
-            // 1. Find all ideas owned by this user that have PENDING reports
-            // We pluck the IDs to find the people who reported them
-            $reportedIdeas = DB::table('ideas')
-                ->where('author_id', $userId)
-                ->where('author_type', $userType)
-                ->join('reports', 'ideas.id', '=', 'reports.idea_id')
-                ->where('reports.status', 'pending')
-                ->select('reports.reporter_id', 'reports.reporter_type', 'reports.reason', 'ideas.title','ideas.id as idea_id' ,  'reports.id as report_id')
-                ->get();
-  
-            // 2. Notify each reporter
-            foreach ($reportedIdeas as $report) {
-                Notification::create([
-                    'notifiable_user_id' => $report->reporter_id,
-                    'notifiable_user_type' => $report->reporter_type,
-                    'title' =>  $report->title,
-                    'message' => "The author of the idea you reported as \"" . $report->reason . "\" has been officially WARNED",
-                ]);
-  
-                // 3. Mark the report as resolved
-                Report::where('id', $report->report_id)->update([
-                    'status' => 'resolved',
-                ]);
-                //3b. Decrement the report count for the idea
-                DB::table('ideas')->where('id', $report->idea_id)->decrement('report_count');
-            }
+            $user = $userType::findOrFail($request->user_id);
+            $reason = $request->reason ?: 'Violation of Rules and Regulations. Repeated violations lead to suspension.';
 
-            // Notify warned user
-             Notification::create([
-              'notifiable_user_id' => $userId,
-              'notifiable_user_type' => $userType,
-              'title' => 'Warning',
-              'message' => $request-> $reason ? $reason : 'It come across that you are voilating our Rules and Regulations we advised to follow them in your content otherwise 
-                                                           it will lead to account SUSPENSION or PERMANENT DELETION of your account'
-            ]);
+            $this->resolveReportsByAccount($user->id, $userType, "Warned");
+            $user->increment('warning_count');
+            $this->logAction($user->id, $userType, 'warn_user', $reason);
+            $this->notifyUser($user->id, $userType, 'Warning Issued', $reason);
 
-
-            // 5. Increment the warning count for the user
-             $user = $userType::findOrFail($request->user_id);
-             $user->increment('warning_count');
-  
-            // 6. Log the Admin Action
-            AdminLog::create([
-                'admin_id' => Auth::id(),
-                'target_id' => $userId,
-                'target_type' => $userType,
-                'action_taken' => 'warn_user',
-                'notes' => $reason,
-                'resolved_at' => now(),
-          ]);
-  
-          return response()->json([
-            'message' => 'User warned and reporters notified.',
-             'new_count' => $user->warning_count
-             ]);
-    });
-       
+            return response()->json(['message' => 'User warned.', 'new_count' => $user->warning_count]);
+        });
     }
 
-    public function toggleSuspension(Request $request)
-    {
-           return DB::transaction(function () use ($request) {
-           $this->ensureAdmin();
-  
-            $request->validate([
-                'user_id' => 'required',
-                'user_type' => 'required|in:student,teacher',
-                'reason' => 'required|string'
-            ]);
-  
-            $userId = $request->user_id;
+    public function toggleSuspension(Request $request) {
+        return DB::transaction(function () use ($request) {
+            $this->ensureAdmin();
             $userType = $request->user_type == 'student' ? Student::class : Teacher::class;
-            $reason = $request->reason;
+            $user = $userType::findOrFail($request->user_id);
+            $reason = $request->reason ?: ($user->is_suspended ? 'Your account has been reactivated.' : 'Your account has been suspended for violations.');
 
-
-            // Toggle logic
-            $user = $userType::findOrFail($userId);
-            $user->is_suspended = $user->is_suspended ? false : true;
+            $user->is_suspended = !$user->is_suspended;
             
             if ($user->is_suspended) {
-                $user->suspension_reason = $reason ?? 'Your account has been suspended due to violation of our terms. Please contact support for more information.';
+                $user->suspension_reason = $reason;
                 $user->suspended_at = now();
-
-                // 1. Find all ideas owned by this user that have PENDING reports
-                // We pluck the IDs to find the people who reported them
-                $reportedIdeas = DB::table('ideas')
-                    ->where('author_id', $userId)
-                    ->where('author_type', $userType)
-                    ->join('reports', 'ideas.id', '=', 'reports.idea_id')
-                    ->where('reports.status', 'pending')
-                    ->select('reports.reporter_id', 'reports.reporter_type', 'reports.reason', 'ideas.title', 'ideas.id as idea_id', 'reports.id as report_id')
-                    ->get();
-      
-                // 2. Notify each reporter
-                foreach ($reportedIdeas as $report) {
-                    Notification::create([
-                        'notifiable_user_id' => $report->reporter_id,
-                        'notifiable_user_type' => $report->reporter_type,
-                        'title' =>  $report->title,
-                        'message' => "The author of the idea you reported as \"" . $report->reason . "\" has been officially SUSPENDED",
-                    ]);
-      
-                    // 3. Mark the report as resolved
-                    Report::where('id', $report->report_id)->update([
-                        'status' => 'resolved',
-                    ]);
-
-                    //3b. Decrement the report count for the idea
-                    DB::table('ideas')->where('id', $report->idea_id)->decrement('report_count');
-                }
-
-                    // 4. Reset warning count on suspension
-                    $user->warning_count = 0 ;
+                $user->warning_count = 0;
+                $this->resolveReportsByAccount($user->id, $userType, "Suspended");
             } else {
                 $user->suspension_reason = null;
                 $user->suspended_at = null;
@@ -215,33 +150,71 @@ class AdminActionController extends Controller
 
             $user->save();
 
-            //5. Notify warned user
-             Notification::create([
-              'notifiable_user_id' => $userId,
-              'notifiable_user_type' => $userType,
-              'title' => 'Account ' . ($user->is_suspended ? 'Suspended' : 'Reactivated'),
-              'message' => $request-> $reason ? $reason : ($user->is_suspended ? 'Your account has been suspended due to violation of our terms. Please contact support for more information.' 
-                                                                               : 'Your account has been reactivated. Please adhere to our community guidelines to avoid future suspensions.')
+            $actionTaken = $user->is_suspended ? 'suspend_user' : 'unsuspend_user';
+            $notificationTitle = $user->is_suspended ? 'Account Suspended' : 'Account Reactivated';
+            
+            $this->logAction($user->id, $userType, $actionTaken, $reason);
+            $this->notifyUser($user->id, $userType, $notificationTitle, $reason);
+
+            return response()->json(['message' => 'Status updated.', 'is_suspended' => $user->is_suspended]);
+        });
+    }
+
+    public function dismissReport(Request $request, $id) {
+        return DB::transaction(function () use ($id, $request) {
+            $this->ensureAdmin();
+            $idea = Ideas::findOrFail($id);
+            $reason = $request->reason ?: 'No violation found after manual review.';
+
+
+            Report::where('idea_id', $id)->where('status', 'pending')->update([
+                'status' => 'resolved', 
+                'resolved_at' => now()
             ]);
 
-      
-            
-            $user->save();
-  
-             AdminLog::create([
-            'admin_id' => Auth::id(),
-            'target_id' => $user->id,
-            'target_type' => $userType,
-            'action_taken' => $user->is_suspended ? 'suspend_user' : 'unsuspend_user',
-            'notes' => $request->reason,
-            'resolved_at' => now(),
-        ]);
+            $idea->update(['report_count' => 0]); 
 
-        return response()->json([
-            'message' => $user->is_suspended ? 'User suspended.' : 'User activated.',
-            'is_suspended' => $user->is_suspended
-        ]);
-    });
-  
+            $this->logAction($id, Ideas::class, 'dismiss_reports', $reason);
+            
+            return response()->json(['message' => 'Reports dismissed. Content marked as safe.']);
+        });
     }
+
+    public function deleteUserAccount(Request $request) {
+        return DB::transaction(function () use ($request) {
+            $this->ensureAdmin();
+            $userType = $request->user_type == 'student' ? Student::class : Teacher::class;
+            $user = $userType::findOrFail($request->user_id);
+            $reason = $request->reason ?: 'Account permanently terminated for severe violations.';
+
+            // 1. Blacklist the email
+            DB::table('blacklisted_emails')->insert([
+                'email' => $user->email,
+                'reason' => $reason,
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+           
+            $this->resolveReportsByAccount($user->id, $userType, "Account Terminated");
+            $this->logAction($user->id, $userType, 'delete_user_account', $reason);
+           
+            //2. Delete user image
+            if ($user->image) {
+             Storage::disk('public')->delete($user->image);
+        }
+            
+            //2. permanantly delete all their ideas
+            $ideaIds = $user->ideas()->pluck('id')->toArray();
+            $user->ideas()->forceDelete();
+
+            foreach ($ideaIds as $ideaId) {
+                broadcast(new IdeaDeleted($ideaId))->toOthers();
+            }
+
+            $user->delete();
+
+            return response()->json(['message' => 'User account deleted and email blacklisted.']);
+        });
+    }
+    
 }

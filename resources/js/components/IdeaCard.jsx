@@ -436,7 +436,7 @@ export default function IdeaCard({ idea, isOwner, refreshIdeas, isTrashMode, onC
       {/* Idea Title, Summary, Tags */}
         <CardContent 
             sx={{ pt: 1, pb: 1, cursor: 'pointer' }}
-            onClick={() => onCardClick ? onCardClick(idea) : setExpanded(!expanded)}
+            onClick={() => setExpanded(!expanded)}
         >
           <Box>
               <Typography variant="h6" fontWeight="bold" sx={{ color: Colors.darker, mb: 1 }}>{idea.title}</Typography>

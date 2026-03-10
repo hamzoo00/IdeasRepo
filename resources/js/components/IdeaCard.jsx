@@ -207,7 +207,10 @@ export default function IdeaCard({ idea, isOwner, refreshIdeas, isTrashMode, onC
 
     try {
         if (action === 'delete') {
-            await api.delete(`/admin/ideas/${idea.id}`);
+            await api.delete(`/admin/ideas/${idea.id}`, {
+                user_id: idea.author_id,
+                user_type: idea.author_type.toLowerCase().includes('student') ? 'student' : 'teacher',
+            });
             
         } 
         else if (action === 'warn') {

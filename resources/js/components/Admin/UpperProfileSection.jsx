@@ -102,10 +102,8 @@ export default function UpperProfileSection({ profile, isOwner, onUpdate }) {
             ? adminProfile.image 
             : `http://ideasrepo.test/storage/${adminProfile.image}`;
          setImagePreview(url);
-         console.log("Image URL set to:", url);
       } else {
          setImagePreview(null);
-         console.log("Image URL set to:", null);
       }
     }
   }, [adminProfile, reset]);

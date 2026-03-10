@@ -17,6 +17,7 @@ import { useSearchParams } from 'react-router-dom';
 import api from '../../components/axios'; 
 import { useNavigate } from 'react-router-dom';
 import echo from '../../components/echo';
+import SuspensionOverlay from '../../components/SuspensionOverlay/SuspensionOverlay';
 
 
 
@@ -45,6 +46,8 @@ export default function Home() {
     const isOwner = useSelector((state) => state.auth.user.is_owner);
     const logInUserId = useSelector((state) => state.auth.user.id);
     const logInUserName = useSelector((state) => state.auth.user.full_name);
+    const isLoggedInUserSuspended = useSelector((state) => state.auth.user.is_suspended);
+    const suspensionReason = useSelector((state) => state.auth.user.suspension_reason);
 
     const isAdminViewing = profileType === 'admin';
 
@@ -145,7 +148,8 @@ export default function Home() {
      
     return (
         <>
-          <Header id={id} name={name} profileImage={profileImage} profileType={profileType}/>
+          <SuspensionOverlay isSuspended={isLoggedInUserSuspended} reason={suspensionReason} />
+          <Header id={id} name={name} profileImage={profileImage} profileType={profileType} isOwner={isOwner}/>
           {!isAdminViewing && <PostIdea />}
           
           <Container maxWidth="md" sx={{ mt: 4, mb: 8 }}>

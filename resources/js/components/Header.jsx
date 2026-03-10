@@ -1,255 +1,214 @@
 import * as React from 'react';
-import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
-import Menu from '@mui/material/Menu';
-import MenuIcon from '@mui/icons-material/Menu';
-import Container from '@mui/material/Container';
-import Avatar from '@mui/material/Avatar';
-import Button from '@mui/material/Button';
-import Tooltip from '@mui/material/Tooltip';
-import MenuItem from '@mui/material/MenuItem';
-import AdbIcon from '@mui/icons-material/Adb';
+import { 
+  AppBar, Box, Toolbar, IconButton, Typography, 
+  Menu, Container, Avatar, Tooltip, MenuItem, 
+  InputBase, Stack 
+} from '@mui/material';
+import { 
+  Search as SearchIcon, 
+  Lightbulb as LogoIcon 
+} from '@mui/icons-material';
+import { styled, alpha } from '@mui/material/styles';
 import { Link } from 'react-router';
 import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { clearUser} from '../store/slices/userDetailsSlice';
+import { clearUser } from '../store/slices/userDetailsSlice';
 import NotificationBell from './NotificationBell/NotificationBell';
 
-
 const Colors = {
-  darkest:     "#03045E", // Brand authority: logos, main headings, navbar/footer
-  darker:      "#023E8A", // Primary UI actions: nav links, main buttons, active states
-  dark:        "#0077B6", // Interactive elements: hover states, secondary buttons, links
-  mediumDark:  "#0096C7", // Supporting UI: helper text, secondary links, icons
-  primary:     "#00B4D8", // Core action highlight: CTAs, input focus, active indicators
-  mediumLight: "#48CAE4", // Soft feedback: hover backgrounds, selected cards/rows
-  light:       "#90E0EF", // Section backgrounds: forms, tables, grouped content
-  lighter:     "#ADE8F4", // Layout support: sidebars, panels, app sections
-  lightest:    "#CAF0F8", // Global background: pages, auth screens
+  darkest: "#03045E",
+  darker: "#023E8A",
+  dark: "#0077B6",
+  mediumDark: "#0096C7",
+  primary: "#00B4D8",
+  mediumLight: "#48CAE4",
+  light: "#90E0EF",
+  lighter: "#ADE8F4",
+  lightest: "#CAF0F8",
 };
 
+// Styled Search Component
+const Search = styled('div')(({ theme }) => ({
+  position: 'relative',
+  borderRadius: '20px',
+  backgroundColor: alpha(Colors.lightest, 0.15),
+  '&:hover': {
+    backgroundColor: alpha(Colors.lightest, 0.25),
+  },
+  marginRight: theme.spacing(2),
+  marginLeft: 0,
+  width: '100%',
+  [theme.breakpoints.up('sm')]: {
+    marginLeft: theme.spacing(3),
+    width: 'auto',
+    minWidth: '300px'
+  },
+}));
 
-export default function Header({id, name, profileImage, profileType}) {
+const SearchIconWrapper = styled('div')(({ theme }) => ({
+  padding: theme.spacing(0, 2),
+  height: '100%',
+  position: 'absolute',
+  pointerEvents: 'none',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  color: Colors.light,
+}));
 
-    const dispatch = useDispatch();  
-    const [imagePreview, setImagePreview] = useState(null);
+const StyledInputBase = styled(InputBase)(({ theme }) => ({
+  color: 'inherit',
+  width: '100%',
+  '& .MuiInputBase-input': {
+    padding: theme.spacing(1, 1, 1, 0),
+    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
+    transition: theme.transitions.create('width'),
+    fontSize: '0.9rem',
+  },
+}));
 
-    useEffect(() => {
-        if (profileImage) {
-         const url = profileImage.startsWith('http') 
-            ? profileImage 
-            : `http://ideasrepo.test/storage/${profileImage}`;
-         setImagePreview(url);
-      } else {
-         setImagePreview(null);
-      }
-    }, [profileImage]);
 
-    let path = `/${name}/${id}/profile`;
+export default function Header({ id, name, profileImage, profileType, isOwner }) {
 
-    if(profileType === "admin") { path = `/${id}/admin/profile`;}
-    else if(profileType === "teacher"){ path = `/${name}/${id}/teacher/profile`;}
-      
-    
-    const pages = [
-       { label: "Contact Us", path: "/contactUs" },
-       { label: "Home", path: `/${name}/${id}/home` },
-    ];
-    
-    const settings = [
-       { label: "Profile", path: path},
-       { label: "Home", path: `/${name}/${id}/home` },
-       { label: "Contact Us", path: "/contactUs" },
-       { label: "Logout", path: "/" },
-    ];
-  
-    const [anchorElNav, setAnchorElNav] = React.useState(null);
-    const [anchorElUser, setAnchorElUser] = React.useState(null);
+  const dispatch = useDispatch();
+  const [imagePreview, setImagePreview] = useState(null);
+  const [anchorElUser, setAnchorElUser] = useState(null);
 
-    const handleOpenNavMenu = (event) => {
-    setAnchorElNav(event.currentTarget);
-  };
-  const handleOpenUserMenu = (event) => {
-    setAnchorElUser(event.currentTarget);
-  };
+  useEffect(() => {
+    if (profileImage) {
+      const url = profileImage.startsWith('http')
+        ? profileImage
+        : `http://ideasrepo.test/storage/${profileImage}`;
+      setImagePreview(url);
+    } else {
+      setImagePreview(null);
+    }
+  }, [profileImage]);
 
-  const handleCloseNavMenu = () => {
-    setAnchorElNav(null);
-  };
+  let profilePath = `/${name}/${id}/profile`;
+  if (profileType === "admin") profilePath = `/${id}/admin/profile`;
+  else if (profileType === "teacher") profilePath = `/${name}/${id}/teacher/profile`;
 
-  const handleCloseUserMenu = () => {
-    setAnchorElUser(null);
-  };
+  const settings = [
+    { label: "Profile", path: profilePath },
+    { label: "Home", path: `/${name}/${id}/home` },
+    { label: "Contact Us", path: "/contactUs" },
+    { label: "Logout", path: "/" },
+  ];
 
-    return (
-        <AppBar position="static">
-      <Container maxWidth="xl" sx ={{ backgroundColor: Colors.darkest }}>
-        <Toolbar disableGutters>
-          {/* <AdbIcon sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} /> */}
+  const handleOpenUserMenu = (event) => setAnchorElUser(event.currentTarget);
+  const handleCloseUserMenu = () => setAnchorElUser(null);
 
-          {/* Logo */}
-          <Typography
-            variant="h6"
-            noWrap
-            component={Link}
-            to = {`/${name}/${id}/home`}
-            sx={{
-              mr: 2,
-              display: { xs: 'none', md: 'flex' },
-              fontFamily: 'monospace',
-              fontWeight: 700,
-              letterSpacing: '.3rem',
-              color: 'inherit',
-              textDecoration: 'none',
-            }}
+  return (
+    <AppBar position="sticky" sx={{ backgroundColor: Colors.darkest, boxShadow: '0 2px 10px rgba(0,0,0,0.2)' }}>
+      <Container maxWidth="xl">
+        <Toolbar disableGutters sx={{ display: 'flex', justifyContent: 'space-between' }}>
+          
+          {/* 1. LOGO */}
+          <Stack 
+            direction="row" 
+            alignItems="center" 
+            component={Link} 
+            to={`/${name}/${id}/home`} 
+            sx={{ textDecoration: 'none', gap: 1 }}
           >
-            IdeasRepo
-          </Typography>
-
-            {/* Mobile View */}
-          <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
-            <IconButton
-              size="large"
-              aria-label="account of current user"
-              aria-controls="menu-appbar"
-              aria-haspopup="true"
-              onClick={handleOpenNavMenu}
-              color="inherit"
-            >
-              <MenuIcon />
-            </IconButton>
-
-            {/* Navbar navigation */}
-            <Menu
-              id="menu-appbar"
-              anchorEl={anchorElNav}
-              anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'left',
+            <LogoIcon sx={{ color: Colors.primary, fontSize: 30, mr: { xs: 1, sm: 0 } }} />
+            <Typography
+              variant="h6"
+              noWrap
+              sx={{
+                fontFamily: "'Poppins', sans-serif",
+                fontWeight: 800,
+                letterSpacing: '.1rem',
+                background: `linear-gradient(45deg, ${Colors.lightest} 40%, ${Colors.primary} 90%)`,
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                display: { xs: 'none', sm: 'block' }
               }}
-              keepMounted
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'left',
-              }}
-              open={Boolean(anchorElNav)}
-              onClose={handleCloseNavMenu}
-              sx={{ display: { xs: 'block', md: 'none' } }}
             >
-              {pages.map((page) => ( 
-               <MenuItem
-                  key={page.path}
-                  component={Link}
-                  to={page.path}
-                  onClick={handleCloseNavMenu}
+              IdeasRepo
+            </Typography>
+          </Stack>
+
+          {/* 3.  SEARCH BAR  */}
+          <Search>
+            <SearchIconWrapper>
+              <SearchIcon />
+            </SearchIconWrapper>
+            <StyledInputBase
+              placeholder="Search ideas, tags, or creators..."
+              inputProps={{ 'aria-label': 'search' }}
+            />
+          </Search>
+
+          {/* RIGHT SECTION: NOTIFICATION & PROFILE */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            
+            {/* 4. CONDITIONAL NOTIFICATION BELL */}
+            {isOwner && (
+              <Box sx={{ mr: 1 }}>
+                <NotificationBell />
+              </Box>
+            )}
+
+            <Tooltip title="Account settings">
+              <IconButton onClick={handleOpenUserMenu} sx={{ p: 0, border: `2px solid ${Colors.mediumDark}` }}>
+                <Avatar 
+                  alt={name} 
+                  src={imagePreview} 
+                  sx={{ width: 40, height: 40, bgcolor: Colors.primary }}
                 >
-                  <Typography sx={{ textAlign: 'center' }}>
-                    {page.label}
+                  {name ? name.charAt(0).toUpperCase() : 'U'}
+                </Avatar>
+              </IconButton>
+            </Tooltip>
+
+            <Menu
+              sx={{ mt: '45px' }}
+              id="menu-appbar"
+              anchorEl={anchorElUser}
+              anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+              keepMounted
+              transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+              open={Boolean(anchorElUser)}
+              onClose={handleCloseUserMenu}
+              PaperProps={{
+                sx: { 
+                  borderRadius: 2, 
+                  minWidth: 180,
+                  boxShadow: '0px 5px 15px rgba(0,0,0,0.1)' 
+                }
+              }}
+            >
+              {settings.map((setting) => (
+                <MenuItem 
+                  key={setting.label} 
+                  component={Link}
+                  to={setting.path}
+                  onClick={() => {
+                    handleCloseUserMenu();
+                    if (setting.label === "Logout") dispatch(clearUser());
+                  }}
+                  sx={{ 
+                    py: 1.5,
+                    transition: '0.2s',
+                    '&:hover': { 
+                      backgroundColor: Colors.lightest,
+                      color: Colors.darker,
+                      pl: 3
+                    } 
+                  }}
+                >
+                  <Typography textAlign="center" sx={{ fontWeight: 500 }}>
+                    {setting.label}
                   </Typography>
                 </MenuItem>
               ))}
             </Menu>
-            
           </Box>
 
-          {/* Desktop View */}
-          <AdbIcon sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }} />
-
-          <Typography
-            variant="h5"
-            noWrap
-            component={Link}
-            to="/home"
-            href="#app-bar-with-responsive-menu"
-            sx={{
-              mr: 2,
-              display: { xs: 'flex', md: 'none' },
-              flexGrow: 1,
-              fontFamily: 'monospace',
-              fontWeight: 700,
-              letterSpacing: '.3rem',
-              color: 'inherit',
-              textDecoration: 'none',
-            }}
-          >
-            IdeasRepo
-          </Typography>
-
-          {/* Navigation Links */}
-          <Box sx={{ flexGrow: 1, flexFlow: 'row-reverse', marginRight:1 ,display: { xs: 'none', md: 'flex' } }}>
-            {pages.map((page) => (
-                <Button
-                   key={page.path}              
-                   component={Link}            
-                   to={page.path}
-                   onClick={handleCloseNavMenu}
-                   sx={{ my: 2, color: 'white', display: 'block' }}
-                 >
-                   {page.label}                
-                 </Button>
-            ))}
-          </Box>
-
-         {/* Notification Bell */}
-        <Box sx={{ flexGrow: 0, flexFlow: 'row-reverse', marginRight:1 ,display: { xs: 'flex'} }}>
-          <NotificationBell />
-          </Box>
-          <Box sx={{ flexGrow: 0 }}>
-            <Tooltip title="Open settings">
-              <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-
-           {/* Profile image */}
-                <Avatar alt="UserImage" src={imagePreview} />
-              </IconButton>
-            </Tooltip>
-
-           {/* Profile Menu    */}
-            <Menu
-              sx={{ mt: '45px',  }}
-              id="menu-appbar"
-              anchorEl={anchorElUser}
-              anchorOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              open={Boolean(anchorElUser)}
-              onClose={handleCloseUserMenu}
-
-            >
-              {settings.map((setting) => (
-                <MenuItem 
-                component={Link}
-                to ={setting.path }
-                key={setting.path} onClick={() => {
-                  handleCloseUserMenu();
-                  if (setting.label === "Logout") {
-                    dispatch(clearUser());
-                  }
-                }}
-                 sx={{ textAlign: 'center' ,
-                    '&:hover': {
-                     transform: 'scale(1.1)',}}}
-               >
-                  <Typography sx={{ textAlign: 'center' ,
-                    '&:hover': {
-                     color: Colors.darker,
-                   }, }}>
-                    {setting.label}</Typography>
-                </MenuItem>
-              ))}
-            </Menu>
-          </Box>
         </Toolbar>
       </Container>
     </AppBar>
-  
-    );
+  );
 }

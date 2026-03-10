@@ -12,6 +12,8 @@ import { setUser} from '../../store/slices/userDetailsSlice';
 import { useNavigate } from 'react-router-dom';
 import LoadingScreen from '../../components/LoadingScreen';
 import { useSelector } from 'react-redux';
+import { Warning } from '@mui/icons-material';
+import SuspensionOverlay from '../../components/SuspensionOverlay/SuspensionOverlay';
 
 
 export default function TeacherProfile() {
@@ -34,6 +36,9 @@ export default function TeacherProfile() {
         image: latestProfileData.image,
         type: 'teacher', 
         is_owner: true,
+        is_suspended: latestProfileData.is_suspended,
+        suspension_reason: latestProfileData.suspension_reason,
+        Warning_count: latestProfileData.warning_count
       }));
     }
   };
@@ -84,7 +89,8 @@ export default function TeacherProfile() {
        if (!profile) return <LoadingScreen message="Profile not found." />;
     
     return <>
-        <Header id={id} name={name} profileImage={profile?.image} profileType="teacher" />
+        <SuspensionOverlay isSuspended={profile.is_suspended} reason={profile.suspension_reason} />
+        <Header id={id} name={name} profileImage={profile?.image} profileType="teacher" isOwner={isOwner} />
         <UpperProfileSection profile={profile} isOwner={isOwner} onUpdate={handleProfileUpdate} onUpdateSuccess={handleFeedRefresh} isAdminViewing={isAdminViewing}/>
         {isOwner && <PostIdea onPostSuccess={handleFeedRefresh}/>}
         <LowerProfileSection isOwner={isOwner} viewedUserId={id} viewedUserType="Teacher" refreshTrigger={feedRefreshTrigger} isAdminViewing={isAdminViewing}/>

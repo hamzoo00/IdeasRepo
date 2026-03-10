@@ -11,6 +11,8 @@ import { setUser} from '../../store/slices/userDetailsSlice';
 import { useNavigate } from 'react-router-dom';
 import LoadingScreen from '../../components/LoadingScreen';
 import { useSelector } from 'react-redux';
+import { Warning } from '@mui/icons-material';
+import SuspensionOverlay from '../../components/SuspensionOverlay/SuspensionOverlay';
 
 export default function StudentProfile() {
 
@@ -33,6 +35,9 @@ export default function StudentProfile() {
         image: latestProfileData.image,
         type: 'student', 
         is_owner: true,
+        is_suspended: latestProfileData.is_suspended,
+        suspension_reason: latestProfileData.suspension_reason,
+        Warning_count: latestProfileData.warning_count
       }));
     }
   };
@@ -64,6 +69,8 @@ export default function StudentProfile() {
          return () => { mounted = false; };
        }, [id, feedRefreshTrigger]);
 
+       console.log("Profile Data:", profile);
+
       const isAdminViewing = useSelector((state) => state.auth.user?.type === 'admin') || false;
 
     
@@ -86,7 +93,8 @@ export default function StudentProfile() {
 
     return ( 
     <>
-            <Header id={id} name={name} profileImage={profile?.image} profileType="student" />
+            <SuspensionOverlay isSuspended={profile.is_suspended} reason={profile.suspension_reason}/>
+            <Header id={id} name={name} profileImage={profile?.image} profileType="student" isOwner={isOwner} />
             <UpperProfileSection profile={profile} isOwner={isOwner} onUpdate={handleProfileUpdate} onUpdateSuccess={handleFeedRefresh} isAdminViewing={isAdminViewing}/>
             {isOwner && <PostIdea onPostSuccess={handleFeedRefresh} />}
             <LowerProfileSection isOwner={isOwner} viewedUserId={id} viewedUserType="Student" refreshTrigger={feedRefreshTrigger} isAdminViewing={isAdminViewing} />

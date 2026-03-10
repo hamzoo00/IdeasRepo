@@ -34,6 +34,7 @@ class TeacherProfileController extends Controller
         'image'        => $teacher->profile ? $teacher->profile->image : null,
         'warning_count' => $teacher->profile ? $teacher->profile->warning_count : 0,
         'is_suspended' => $teacher->profile ? $teacher->profile->is_suspended : false,
+        'suspension_reason' => $teacher->profile ? $teacher->profile->suspension_reason : null,
      ];
 
         return response()->json([

@@ -30,6 +30,10 @@ class AdminActionController extends Controller
      return DB::transaction(function () use ($id, $request) {
         $this->ensureAdmin();
         
+        $userId = $request->user_id;
+        $userType = $request->user_type == 'student' ? Student::class : Teacher::class;
+        $reason = $request->reason;
+
         $idea = Ideas::findOrFail($id);
 
         // 1. Get all user IDs who reported this specific idea
@@ -59,6 +63,14 @@ class AdminActionController extends Controller
             ]);
         }
 
+        //4. Notify the user whose idea is been deleted
+        Notification::create([
+              'notifiable_user_id' => $userId,
+              'notifiable_user_type' => $userType,
+              'title' => $idea->title,
+              'message' => $request-> $reason ? $reason : 'Your Idea is been DELETED for the voilation of Rules'
+        ]);
+
         $idOfDeletedIdea = $idea->id;
         $idea->forceDelete();
         broadcast(new IdeaDeleted($idOfDeletedIdea))->toOthers();
@@ -80,7 +92,7 @@ class AdminActionController extends Controller
             ]);
   
             $userId = $request->user_id;
-            $userType = $request->user_type === 'student' ? Student::class : TeacherProfile::class ; // 'App\Models\Auth\Student' or 'Teacher'
+            $userType = $request->user_type == 'student' ? Student::class : Teacher::class;
             $reason = $request->reason;
   
             // 1. Find all ideas owned by this user that have PENDING reports
@@ -107,6 +119,16 @@ class AdminActionController extends Controller
                     'status' => 'resolved',
                 ]);
             }
+
+            // Notify warned user
+             Notification::create([
+              'notifiable_user_id' => $userId,
+              'notifiable_user_type' => $userType,
+              'title' => 'Warning',
+              'message' => $request-> $reason ? $reason : 'It come across that you are voilating our Rules and Regulations we advised to follow them in your content otherwise 
+                                                           it will lead to account SUSPENSION or PERMANENT DELETION of your account'
+            ]);
+
 
             // 5. Increment the warning count for the user
              $user = $userType::findOrFail($request->user_id);
@@ -142,7 +164,7 @@ class AdminActionController extends Controller
             ]);
   
             $userId = $request->user_id;
-            $userType = $request->user_type === 'student' ? Student::class : TeacherProfile::class ; // 'App\Models\Auth\Student' or 'Teacher'
+            $userType = $request->user_type == 'student' ? Student::class : Teacher::class;
             $reason = $request->reason;
 
 
@@ -151,7 +173,7 @@ class AdminActionController extends Controller
             $user->is_suspended = $user->is_suspended ? false : true;
             
             if ($user->is_suspended) {
-                $user->suspension_reason = $reason ?? 'Violation of terms';
+                $user->suspension_reason = $reason ?? 'Your account has been suspended due to violation of our terms. Please contact support for more information.';
                 $user->suspended_at = now();
 
                 // 1. Find all ideas owned by this user that have PENDING reports
@@ -178,10 +200,26 @@ class AdminActionController extends Controller
                         'status' => 'resolved',
                     ]);
                 }
+
+                    // 4. Reset warning count on suspension
+                    $user->warning_count = 0 ;
             } else {
                 $user->suspension_reason = null;
                 $user->suspended_at = null;
             }
+
+            $user->save();
+
+            //5. Notify warned user
+             Notification::create([
+              'notifiable_user_id' => $userId,
+              'notifiable_user_type' => $userType,
+              'title' => 'Account ' . ($user->is_suspended ? 'Suspended' : 'Reactivated'),
+              'message' => $request-> $reason ? $reason : ($user->is_suspended ? 'Your account has been suspended due to violation of our terms. Please contact support for more information.' 
+                                                                               : 'Your account has been reactivated. Please adhere to our community guidelines to avoid future suspensions.')
+            ]);
+
+      
             
             $user->save();
   

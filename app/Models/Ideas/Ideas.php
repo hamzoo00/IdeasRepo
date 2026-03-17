@@ -15,7 +15,7 @@ class Ideas extends Model
 
     protected $fillable = [
         'title', 'summary', 'description', 'tech_stack',
-        'status', 'is_embargo', 'author_id', 'author_type', 'is_edited'
+        'status', 'is_embargo', 'author_id', 'author_type', 'is_edited', 'report_count'
     ];
 
     // Polymorphic Relationship
@@ -36,6 +36,6 @@ class Ideas extends Model
 
     public function reports()
    {
-    return $this->hasMany(Report::class);
+    return $this->hasMany(Report::class, 'idea_id');
    }
 }

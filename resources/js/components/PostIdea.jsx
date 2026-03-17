@@ -132,7 +132,6 @@ export default function PostIdea({onPostSuccess}) {
       alert("Idea posted successfully!"); 
       handleClose();
       if (onPostSuccess && typeof onPostSuccess === 'function') {
-        console.log("Calling onPostSuccess callback...");
           onPostSuccess(); 
       } 
     

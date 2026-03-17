@@ -14,6 +14,7 @@ import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { clearUser } from '../store/slices/userDetailsSlice';
 import NotificationBell from './NotificationBell/NotificationBell';
+import { useSelector } from 'react-redux';
 
 const Colors = {
   darkest: "#03045E",
@@ -73,6 +74,8 @@ export default function Header({ id, name, profileImage, profileType, isOwner })
   const dispatch = useDispatch();
   const [imagePreview, setImagePreview] = useState(null);
   const [anchorElUser, setAnchorElUser] = useState(null);
+  const isAdminLoggedIn = useSelector(state => state.auth.user.type === 'admin');
+
 
   useEffect(() => {
     if (profileImage) {
@@ -91,10 +94,12 @@ export default function Header({ id, name, profileImage, profileType, isOwner })
 
   const settings = [
     { label: "Profile", path: profilePath },
+     isAdminLoggedIn ? { label: "Moderation", path: "/admin/moderation" } : false,
     { label: "Home", path: `/${name}/${id}/home` },
     { label: "Contact Us", path: "/contactUs" },
     { label: "Logout", path: "/" },
-  ];
+   
+  ].filter(Boolean);
 
   const handleOpenUserMenu = (event) => setAnchorElUser(event.currentTarget);
   const handleCloseUserMenu = () => setAnchorElUser(null);

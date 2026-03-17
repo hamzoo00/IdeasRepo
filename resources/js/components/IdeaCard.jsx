@@ -51,6 +51,7 @@ import api from './axios';
 import ReportModal from './Report/ReportModel'; 
 import { useDispatch } from 'react-redux';
 import {setAdminActionTrigger} from '../store/slices/ModerationSlice';
+import ResolutionDialog from './Admin/ResolutionDialog/ResolutionDialog';
 
 const Colors = {
   darkest: "#03045E",
@@ -64,7 +65,7 @@ const Colors = {
   lightest: "#CAF0F8",
 };
 
-export default function IdeaCard({ idea, isOwner, refreshIdeas, isTrashMode, onCardClick, isAdminViewing }) {
+export default function IdeaCard({ idea, isOwner, refreshIdeas, isTrashMode, isAdminViewing,}) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   
@@ -73,6 +74,8 @@ export default function IdeaCard({ idea, isOwner, refreshIdeas, isTrashMode, onC
   const [anchorEl, setAnchorEl] = useState(null);
   const [isSuspended, setIsSuspended] = useState(false);
   const [previewState, setPreviewState] = useState('idle');
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [currentAction, setCurrentAction] = useState(null);
 
   // Report Dialog State
   const [reportOpen, setReportOpen] = useState(false);
@@ -204,40 +207,36 @@ export default function IdeaCard({ idea, isOwner, refreshIdeas, isTrashMode, onC
   handleMenuClose();
 };
 
-  const handleAdminAction = async (action) => {
-    handleMenuClose();
-    if (!window.confirm(`Are you sure you want to ${action}?`)) return;
+  const openResDialog = (type) => {
+    setCurrentAction(type);
+    setDialogOpen(true);
+};
 
-    const  user_id = idea.author_id;
-    const  user_type = idea.author_type.toLowerCase().includes('student') ? 'student' : 'teacher';
-  
+  const handleAdminAction = async (submittedReason) => {
+   setDialogOpen(false);
     try {
-        if (action === 'delete') {
-            await api.delete(`/admin/ideas/${idea.id}`, {
-            });
-           
-        } 
-        else if (action === 'warn') {
-            await api.post('/admin/users/warn', {
-                user_id,
-                user_type,
-            });
-            alert("User warned.");
-        }
-        else if (action === 'suspend' || action === 'unsuspend') {
-           const res = await api.post('/admin/users/suspend', {
-                user_id,
-                user_type,
-            });
-            setIsSuspended(res.data.is_suspended);
-            alert("User suspension status toggled.");
+        let endpoint = "";
+        const payload = { 
+            user_id: idea.author_id, 
+            user_type: idea.author_type === 'App\\Models\\Auth\\Student' ? 'student' : 'teacher',
+            reason: submittedReason 
+        };
+
+        if (currentAction === 'warn') endpoint = '/admin/users/warn';
+        else if (currentAction === 'suspend') endpoint = '/admin/users/suspend';
+        else if (currentAction === 'delete') endpoint = `/admin/ideas/${idea.id}`;
+        else if (currentAction === 'deleteUser') endpoint = `/admin/user/${payload.user_id}/${payload.user_type}`;
+
+        //API call
+        if (currentAction === 'delete') {
+            await api.delete(endpoint, { data: payload }); // Delete uses data block
+        } else {
+            await api.post(endpoint, payload);
         }
 
-        else if (action === 'deleteUser') {
-            await api.delete(`/admin/user/${user_id}/${user_type}`);
-            alert("User Account is been Deleted.");
-        }
+        alert(`User ${currentAction} successfully.`);
 
+        refreshIdeas();
         dispatch(setAdminActionTrigger());
     } catch (err) {
         alert("Action failed: " + err.response?.data?.message);
@@ -272,31 +271,35 @@ export default function IdeaCard({ idea, isOwner, refreshIdeas, isTrashMode, onC
      //3. If Admin 
      if(isAdminViewing) {
       return [
-        <Divider key="divider" /> ,
-        
-        <MenuItem key={'warn'} onClick={() => handleAdminAction('warn')} sx={{ color: 'orange' }}>
-            <ListItemIcon><WarningIcon sx={{ color: 'orange' }} /></ListItemIcon>
-            <ListItemText>Warn Author</ListItemText>
-        </MenuItem> ,
+        <Stack key="admin-actions" direction="column" alignItems={'flex-start'} spacing={0} sx={{ p: 1 ,bgcolor: '#fff5f5', }}>
+            <Button color="warning" onClick={() => openResDialog('warn')} 
+             sx={{'&:hover': { bgcolor: Colors.lightest, opacity: 0.9,}, borderRadius: 1, }}>
 
-        <MenuItem key={'suspend'} onClick={() => isSuspended ? handleAdminAction('unsuspend') : handleAdminAction('suspend')} sx={{ color: isSuspended ? 'green' : 'darkred' }}>
-            <ListItemIcon><BlockIcon sx={{ color: isSuspended ? 'green' : 'darkred' }} /></ListItemIcon>
-            <ListItemText>{isSuspended ? 'Unsuspend Author' : 'Suspend Author'}</ListItemText>
-        </MenuItem> ,
+               Warn</Button>
 
-        <MenuItem key={'delete'} onClick={() => handleAdminAction('delete')} sx={{ color: 'red' }}>
-            <ListItemIcon><DeleteForeverIcon sx={{ color: 'red' }} /></ListItemIcon>
-            <ListItemText>Delete Idea </ListItemText>
-        </MenuItem> ,
+            <Button color={idea.author?.is_suspended ? "success" : "error"} onClick={() => openResDialog('suspend')}
+              sx={{'&:hover': { bgcolor: Colors.lightest, opacity: 0.9,}, borderRadius: 1}}>
 
-        <MenuItem key={'deleteUser'} onClick={() => handleAdminAction('deleteUser')} sx={{ color: 'red' }}>
-            <ListItemIcon><DeleteForeverIcon sx={{ color: 'red' }} /></ListItemIcon>
-            <ListItemText>Delete Account</ListItemText>
-        </MenuItem> ,
-
-        <MenuItem key="share" onClick={handleShare} sx={{ gap: 1 }}>
-            <ShareIcon fontSize="small" /> Share Link
-        </MenuItem> ,
+                {idea.author?.is_suspended ? 'Unsuspend' : 'Suspend'}
+          
+            </Button>
+            <Button color="error" onClick={() => openResDialog('delete')}
+              sx={{'&:hover': { bgcolor: Colors.lightest, opacity: 0.9,}, borderRadius: 1}}>
+                Delete Idea</Button>
+                
+             <Button color="error" onClick={() => openResDialog('deleteUser')} 
+              sx={{'&:hover': { bgcolor: Colors.lightest, opacity: 0.9,}, borderRadius: 1}}>
+                Delete Account</Button>
+          </Stack> ,
+          <ResolutionDialog 
+             key={2}
+             open={dialogOpen} 
+             onClose={() => setDialogOpen(false)} 
+             onConfirm={handleAdminAction} 
+             actionType={currentAction}
+             targetName={currentAction === 'delete' ? idea.title : idea.author?.full_name}
+             isSuspended= {idea.author?.is_suspended}
+          />
       
       ];  
 

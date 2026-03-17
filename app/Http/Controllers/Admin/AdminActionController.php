@@ -64,7 +64,7 @@ class AdminActionController extends Controller
             $this->notifyUser(
                 $report->reporter_id,
                 $report->reporter_type,
-                $report->title,
+                'Report Update: ' . $report->title,
                 "The author of the idea you reported for '{$report->reason}' has been officially $actionName."
             );
 
@@ -101,7 +101,7 @@ class AdminActionController extends Controller
         return DB::transaction(function () use ($id, $request) {
             $this->ensureAdmin();
             $idea = Ideas::findOrFail($id);
-            $reason = $request->reason ?: 'Your idea "'.$idea->title.'" was removed for violating community guidelines.';
+            $reason = $request->reason ? $request->reason : 'Your idea "'.$idea->title.'" was removed for violating community guidelines.';
 
             $this->resolveReportsByIdea($id, $idea->title, "Idea Removed");
             $this->logAction($id, Ideas::class, 'permanent_delete', $reason);
@@ -123,6 +123,10 @@ class AdminActionController extends Controller
             $user = $userType::findOrFail($request->user_id);
             $reason = $request->reason ?: 'Violation of Rules and Regulations. Repeated Violations would lead to Account Suspension.';
 
+            if($user->is_suspended) {
+                return response()->json(['message' => 'Cannot warn a suspended user. Please unsuspend the user before issuing warnings.']);
+            }
+            
             $this->resolveReportsByAccount($user->id, $userType, "Warned");
             $userType == Student::class ? $user->increment('warning_count') : TeacherProfile::where('teacher_id', $user->id)->increment('warning_count');
             $this->logAction($user->id, $userType, 'warn_user', $reason);
@@ -171,16 +175,13 @@ class AdminActionController extends Controller
             $reason = $request->reason ?: 'No violation found after manual review.';
 
 
-            Report::where('idea_id', $id)->where('status', 'pending')->update([
-                'status' => 'resolved', 
-                'resolved_at' => now()
-            ]);
+            $this->resolveReportsByIdea($id, $idea->title, "Report Dismissed");
 
-            $idea->update(['report_count' => 0]); 
+            $idea->update(['report_count' => 0]);
 
-            $this->logAction($id, Ideas::class, 'dismiss_reports', $reason);
+            $this->logAction($id, Ideas::class, 'dismiss_report', $reason);
             
-            return response()->json(['message' => 'Reports dismissed. Content marked as safe.']);
+            return response()->json(['message' => 'Report dismissed. Content marked as safe.']);
         });
     }
 

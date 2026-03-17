@@ -210,18 +210,18 @@ export default function UpperProfileSection({ profile, isOwner, onUpdate, onUpda
 
     try {
         if (action === 'warn') {
-            await api.post('/admin/users/warn', {
+           const res = await api.post('/admin/users/warn', {
                 user_id,
                 user_type,
             });
-            alert("User warned.");
+            alert(res.data.message);
         }
          else if (action === 'suspend' || action === 'unsuspend') {
-            await api.post('/admin/users/suspend', {
+            const res = await api.post('/admin/users/suspend', {
                 user_id,
                 user_type,
             });
-            alert("User suspension status toggled.");
+            alert(res.data.message);
         }
        dispatch(setAdminActionTrigger());
     } catch (err) {
@@ -321,12 +321,12 @@ export default function UpperProfileSection({ profile, isOwner, onUpdate, onUpda
               {/* Action Buttons */}
               <Box>
                 {isAdminViewing && (
-                      <Box sx={{ mt: 2, p: 2, border: '1px dashed red', borderRadius: 2, bgcolor: '#fff5f5' }}>
+                      <Box sx={{ mt: 2, p: 2, border: '1px dashed red', borderRadius: 2, bgcolor: '#fff5f5', }}>
                           <Typography variant="subtitle2" color="error" fontWeight="bold" gutterBottom>
                               ⚠️ Admin Actions
                           </Typography>
 
-                          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                          <Box sx={{ display: 'flex', flexDirection:{xs: 'column', sm: 'row'} ,gap: 2, alignItems: 'center' }}>
 
                               {/* SUSPENSION STATUS */}
                               <Chip 

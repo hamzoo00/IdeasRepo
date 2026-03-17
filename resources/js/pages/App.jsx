@@ -11,6 +11,7 @@ import Home from '../pages/Home/Home';
 import ContactUs from '../pages/ContactUs/ContactUs';
 import ProtectedRoute from './ProtectedRoute';
 import SessionManager from './SessionManager';
+import ModerationCommandCenter from '../pages/Moderation/Moderation';
 
 
 export default function App() {
@@ -49,6 +50,12 @@ export default function App() {
                     <Home />
                 </ProtectedRoute>
              } />
+              <Route path="/admin/moderation" element={
+                <ProtectedRoute>
+                    <ModerationCommandCenter />
+                </ProtectedRoute>
+             } />
+            
         
          </Routes>
         </SessionManager>

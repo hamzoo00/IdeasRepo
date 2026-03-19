@@ -18,6 +18,7 @@ import api from '../../components/axios';
 import { useNavigate } from 'react-router-dom';
 import echo from '../../components/echo';
 import SuspensionOverlay from '../../components/SuspensionOverlay/SuspensionOverlay';
+import AnnouncementBanner from '../../components/Admin/AnnouncementBanner/AnnouncementBanner';
 
 
 
@@ -151,6 +152,8 @@ export default function Home() {
           <SuspensionOverlay isSuspended={isLoggedInUserSuspended} reason={suspensionReason} />
           <Header id={id} name={name} profileImage={profileImage} profileType={profileType} isOwner={isOwner}/>
           {!isAdminViewing && <PostIdea />}
+          <AnnouncementBanner />
+
           
           <Container maxWidth="md" sx={{ mt: 4, mb: 8 }}>
             

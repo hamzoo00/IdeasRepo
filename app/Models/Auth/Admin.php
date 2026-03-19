@@ -3,9 +3,11 @@
 namespace App\Models\Auth;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Admin\Announcement;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use App\Models\Profile\AdminProfile;
 use Laravel\Sanctum\HasApiTokens;
+
 
 class Admin extends Authenticatable
 {
@@ -26,6 +28,11 @@ class Admin extends Authenticatable
      public function profile()
     {
         return $this->hasOne(AdminProfile::class);
+    }
+
+    public function announcements()
+    {
+        return $this->hasMany(Announcement::class, 'admin_id');
     }
 
 }

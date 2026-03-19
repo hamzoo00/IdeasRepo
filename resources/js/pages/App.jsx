@@ -12,6 +12,7 @@ import ContactUs from '../pages/ContactUs/ContactUs';
 import ProtectedRoute from './ProtectedRoute';
 import SessionManager from './SessionManager';
 import ModerationCommandCenter from '../pages/Moderation/Moderation';
+import CreateAnnouncement from './CreateAnnouncement/CreateAnnouncement';
 
 
 export default function App() {
@@ -53,6 +54,11 @@ export default function App() {
               <Route path="/admin/moderation" element={
                 <ProtectedRoute>
                     <ModerationCommandCenter />
+                </ProtectedRoute>
+             } />
+             <Route path="/admin/announcements" element={
+                <ProtectedRoute>
+                    <CreateAnnouncement />
                 </ProtectedRoute>
              } />
             

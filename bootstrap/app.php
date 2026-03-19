@@ -42,6 +42,10 @@ return Application::configure(basePath: dirname(__DIR__))
         Route::middleware('api')
             ->prefix('api')
             ->group(__DIR__.'/../routes/moderation.php');
+
+        Route::middleware('api')
+            ->prefix('api')
+            ->group(__DIR__.'/../routes/announcements.php');
     },
     )
     ->withMiddleware(function (Middleware $middleware): void {

@@ -8,6 +8,7 @@ import {
   Search as SearchIcon, 
   Lightbulb as LogoIcon 
 } from '@mui/icons-material';
+import CampaignIcon from '@mui/icons-material/Campaign'
 import { styled, alpha } from '@mui/material/styles';
 import { Link } from 'react-router';
 import { useState, useEffect } from 'react';
@@ -150,11 +151,27 @@ export default function Header({ id, name, profileImage, profileType, isOwner })
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             
             {/* 4. CONDITIONAL NOTIFICATION BELL */}
-            {isOwner && (
+            {isOwner && !isAdminLoggedIn && (
               <Box sx={{ mr: 1 }}>
                 <NotificationBell />
               </Box>
             )}
+
+          {/* 5. CONDITIONAL ADMIN ANNOUNCEMENT ICON */}
+            {isAdminLoggedIn && (
+              <Tooltip title="Create Announcement">
+                <IconButton 
+                    component={Link} 
+                    to="/admin/announcements" 
+                    sx={{ color: Colors.primary, mr: 1, '&:hover': { color: Colors.lightest } }}
+                >
+                    <CampaignIcon fontSize="large" />
+                </IconButton>
+            </Tooltip>
+            )}
+
+
+
 
             <Tooltip title="Account settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0, border: `2px solid ${Colors.mediumDark}` }}>
